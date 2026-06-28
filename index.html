@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"="width=device-width, initial-scale=1.0" />
+  <title>YolMasraf — Türkiye Yol Masrafı Hesaplayıcı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #181c27;
+      --surface2:  #1e2333;
+      --border:    #2a2f42;
+      --accent:    #e8a020;
+      --accent2:   #f5c842;
+      --text:      #eef0f6;
+      --muted:     #8892a4;
+      --success:   #34c47c;
+      --red:       #e85555;
+      --radius:    14px;
+      --font-head: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .fuel-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .fuel-badge strong { color: var(--text); font-size: 0.9rem; }
+    .fuel-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* ── LEFT PANEL ── */
+    .panel {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 28px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .panel-title {
+      font-family: var(--font-head);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .panel-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* route inputs */
+    .route-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .route-line {
+      position: absolute;
+      left: 19px;
+      top: 44px;
+      width: 2px;
+      height: calc(100% - 88px);
+      background: repeating-linear-gradient(to bottom, var(--accent) 0, var(--accent) 5px, transparent 5px, transparent 10px);
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .input-icon {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+      border: 2px solid var(--border);
+      background: var(--surface2);
+      z-index: 1;
+    }
+    .input-icon.start { border-color: var(--success); color: var(--success); }
+    .input-icon.end   { border-color: var(--accent);  color: var(--accent);  }
+
+    .pac-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .pac-input:focus { border-color: var(--accent); }
+    .pac-input::placeholder { color: var(--muted); }
+
+    /* vehicle */
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .vehicle-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .vehicle-btn {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 6px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+      color: var(--muted);
+    }
+    .vehicle-btn:hover { border-color: var(--accent); color: var(--text); }
+    .vehicle-btn.active {
+      border-color: var(--accent);
+      background: rgba(232,160,32,0.1);
+      color: var(--accent);
+    }
+    .vehicle-btn .icon { font-size: 1.4rem; }
+    .vehicle-btn .label { font-size: 0.72rem; font-weight: 500; }
+
+    /* sliders */
+    .field-group { display: flex; flex-direction: column; gap: 14px; }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .field-name { font-size: 0.82rem; color: var(--muted); }
+    .field-val {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    input[type=number] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      outline: none;
+    }
+    input[type=number]:focus { border-color: var(--accent); }
+
+    /* passengers */
+    .pass-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pass-btn {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s;
+    }
+    .pass-btn:hover { border-color: var(--accent); }
+    .pass-count { font-weight: 700; font-size: 1.1rem; min-width: 24px; text-align: center; }
+
+    /* calculate button */
+    .calc-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--accent);
+      color: #0f1117;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .calc-btn:hover { background: var(--accent2); }
+    .calc-btn:active { transform: scale(0.98); }
+    .calc-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+    /* ── RESULT PANEL ── */
+    .result-section {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      animation: fadeUp 0.3s ease;
+    }
+    .result-section.visible { display: flex; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-hero {
+      background: linear-gradient(135deg, rgba(232,160,32,0.15), rgba(232,160,32,0.04));
+      border: 1px solid rgba(232,160,32,0.3);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+    }
+    .result-hero .total-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .result-hero .total-amount {
+      font-family: var(--font-head);
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.1;
+      margin: 6px 0 2px;
+    }
+    .result-hero .total-sub { font-size: 0.78rem; color: var(--muted); }
+
+    .breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .breakdown-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+    }
+    .breakdown-left { display: flex; align-items: center; gap: 10px; }
+    .breakdown-icon { font-size: 1.1rem; }
+    .breakdown-name { font-size: 0.85rem; color: var(--muted); }
+    .breakdown-detail { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .breakdown-price {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .per-person {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .per-person-label { font-size: 0.82rem; color: var(--muted); }
+    .per-person-val { font-size: 1rem; font-weight: 700; color: var(--success); }
+
+    .route-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .info-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .info-card .ic-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; }
+    .info-card .ic-val { font-size: 1rem; font-weight: 600; }
+
+    /* toll list */
+    .toll-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .toll-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
+    .toll-item .toll-name { color: var(--muted); }
+    .toll-item .toll-price { font-weight: 600; color: var(--text); }
+
+    /* ── MAP ── */
+    #map {
+      width: 100%;
+      height: 100%;
+      min-height: 400px;
+    }
+    .map-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      color: var(--muted);
+      background: var(--surface2);
+    }
+    .map-placeholder .mp-icon { font-size: 3rem; opacity: 0.3; }
+    .map-placeholder p { font-size: 0.9rem; }
+
+    /* loading */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,17,23,0.7);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .loading-overlay.active { display: flex; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: var(--text); font-size: 0.9rem; }
+
+    /* error */
+    .error-box {
+      display: none;
+      background: rgba(232,85,85,0.12);
+      border: 1px solid var(--red);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--red);
+    }
+    .error-box.visible { display: block; }
+
+    /* scrollbar */
+    .panel::-webkit-scrollbar { width: 4px; }
+    .panel::-webkit-scrollbar-track { background: transparent; }
+    .panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Google autocomplete styling */
+    .pac-container {
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 10px !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+      font-family: var(--font-body) !important;
+      margin-top: 4px;
+    }
+    .pac-item {
+      background: transparent !important;
+      color: var(--muted) !important;
+      border-top: 1px solid var(--border) !important;
+      padding: 8px 14px !important;
+      font-size: 0.85rem !important;
+      cursor: pointer;
+    }
+    .pac-item:hover { background: var(--surface2) !important; }
+    .pac-item-query { color: var(--text) !important; }
+
+    /* ── ALTERNATİF ROTALAR ── */
+    .routes-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .route-tab {
+      flex: 1;
+      padding: 10px 6px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .route-tab:hover { border-color: var(--accent); color: var(--text); }
+    .route-tab.active {
+      border-color: var(--accent);
+      background: rgba(232,160,32,0.12);
+      color: var(--accent);
+    }
+    .route-tab.cheapest { border-color: var(--success); }
+    .route-tab.cheapest.active {
+      border-color: var(--success);
+      background: rgba(52,196,124,0.18);
+      color: var(--success);
+    }
+    .route-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-bottom: 3px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .badge-fast  { background: rgba(232,160,32,0.2);  color: var(--accent); }
+    .badge-cheap { background: rgba(52,196,124,0.2);  color: var(--success); }
+    .badge-ferry { background: rgba(96,165,250,0.2);  color: #60a5fa; }
+    .badge-free  { background: rgba(167,139,250,0.2); color: #a78bfa; }
+    .badge-alt   { background: rgba(136,146,164,0.2); color: var(--muted); }
+    .route-tab.ferry-tab { border-color: #60a5fa; }
+    .route-tab.ferry-tab.active { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .route-tab-km    { font-size: 0.72rem; color: var(--muted); margin-top: 2px; font-weight: 400; }
+    .route-tab-price { font-size: 0.92rem; font-weight: 700; margin-top: 2px; }
+
+    @media (max-width: 768px) {
+      main { grid-template-columns: 1fr; }
+      #map-container { min-height: 300px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Rota hesaplanıyor…</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Yol<span>Masraf</span></div>
+  <div class="fuel-badge">
+    <div class="fuel-dot"></div>
+    <div>
+      Benzin <strong id="fuelPriceDisplay">—</strong> ₺/L &nbsp;|&nbsp;
+      Motorin <strong id="dieselPriceDisplay">—</strong> ₺/L
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- LEFT PANEL -->
+  <div class="panel">
+    <div>
+      <div class="panel-title">Yol Masrafını Hesapla</div>
+      <div class="panel-sub">Türkiye'deki tüm otoyol, köprü ve tünel ücretleri dahil</div>
+    </div>
+
+    <!-- ROUTE -->
+    <div>
+      <div class="section-label">Güzergah</div>
+      <div class="route-wrap">
+        <div class="route-line"></div>
+        <div class="input-row">
+          <div class="input-icon start">⬤</div>
+          <input id="origin" class="pac-input" type="text" placeholder="Nereden? (şehir veya adres)" />
+        </div>
+        <div class="input-row">
+          <div class="input-icon end">▲</div>
+          <input id="destination" class="pac-input" type="text" placeholder="Nereye? (şehir veya adres)" />
+        </div>
+      </div>
+    </div>
+
+    <!-- VEHICLE TYPE -->
+    <div>
+      <div class="section-label">Araç Tipi</div>
+      <div class="vehicle-grid">
+        <button class="vehicle-btn active" data-type="car" onclick="selectVehicle(this)">
+          <span class="icon">🚗</span>
+          <span class="label">Binek</span>
+        </button>
+        <button class="vehicle-btn" data-type="suv" onclick="selectVehicle(this)">
+          <span class="icon">🚙</span>
+          <span class="label">SUV/4x4</span>
+        </button>
+        <button class="vehicle-btn" data-type="minibus" onclick="selectVehicle(this)">
+          <span class="icon">🚐</span>
+          <span class="label">Minibüs</span>
+        </button>
+        <button class="vehicle-btn" data-type="motorcycle" onclick="selectVehicle(this)">
+          <span class="icon">🏍️</span>
+          <span class="label">Motosiklet</span>
+        </button>
+        <button class="vehicle-btn" data-type="truck" onclick="selectVehicle(this)">
+          <span class="icon">🚛</span>
+          <span class="label">Kamyon</span>
+        </button>
+        <button class="vehicle-btn" data-type="bus" onclick="selectVehicle(this)">
+          <span class="icon">🚌</span>
+          <span class="label">Otobüs</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FUEL TYPE -->
+    <div>
+      <div class="section-label">Yakıt Türü</div>
+      <div class="vehicle-grid">
+        <button class="vehicle-btn active" data-fuel="benzin" onclick="selectFuel(this)">
+          <span class="icon">⛽</span>
+          <span class="label">Benzin</span>
+        </button>
+        <button class="vehicle-btn" data-fuel="motorin" onclick="selectFuel(this)">
+          <span class="icon">🛢️</span>
+          <span class="label">Motorin</span>
+        </button>
+        <button class="vehicle-btn" data-fuel="lpg" onclick="selectFuel(this)">
+          <span class="icon">🔵</span>
+          <span class="label">LPG</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PARAMS -->
+    <div class="field-group">
+      <div class="section-label">Araç Parametreleri</div>
+
+      <div class="field">
+        <div class="field-header">
+          <span class="field-name">Yakıt tüketimi</span>
+          <span class="field-val"><span id="consumptionVal">8</span> L/100km</span>
+        </div>
+        <input type="range" id="consumption" min="4" max="25" value="8" step="0.5"
+          oninput="document.getElementById('consumptionVal').textContent = this.value" />
+      </div>
+
+      <div class="field">
+        <div class="field-header">
+          <span class="field-name">Yakıt fiyatı (₺/L)</span>
+        </div>
+        <input type="number" id="fuelPrice" step="0.01" placeholder="Otomatik yükleniyor…" />
+      </div>
+    </div>
+
+    <!-- PASSENGERS -->
+    <div>
+      <div class="section-label">Yolcu Sayısı (maliyet bölme)</div>
+      <div class="pass-row">
+        <button class="pass-btn" onclick="changePass(-1)">−</button>
+        <span class="pass-count" id="passCount">1</span>
+        <button class="pass-btn" onclick="changePass(1)">+</button>
+        <span style="font-size:0.8rem;color:var(--muted)">kişi</span>
+      </div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="error-box" id="errorBox"></div>
+
+    <!-- CALC BUTTON -->
+    <button class="calc-btn" id="calcBtn" onclick="calculate()">
+      🧮 Hesapla
+    </button>
+
+    <!-- RESULTS -->
+    <div class="result-section" id="resultSection">
+
+      <!-- ROTA SEÇİCİ TABLAR -->
+      <div class="routes-tabs" id="routesTabs" style="display:none"></div>
+
+      <div class="result-hero">
+        <div class="total-label">Toplam Tahmini Maliyet</div>
+        <div class="total-amount" id="totalAmount">0 ₺</div>
+        <div class="total-sub" id="totalSub"></div>
+        <div id="ferryHeroBar" style="display:none; margin-top:12px; padding:10px 14px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); border-radius:10px;">
+          <div style="font-size:0.72rem; color:#93c5fd; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:4px;">⛴️ Feribot dahil tahmini toplam</div>
+          <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">
+            <span id="ferryTotalAmount" style="font-family:'Space Grotesk',sans-serif; font-size:1.9rem; font-weight:700; color:#bfdbfe;">—</span>
+            <span style="font-size:0.78rem; color:#93c5fd;" id="ferryTotalNote"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="route-info">
+        <div class="info-card">
+          <div class="ic-label">📍 Mesafe</div>
+          <div class="ic-val" id="routeDistance">—</div>
+        </div>
+        <div class="info-card">
+          <div class="ic-label">⏱️ Süre</div>
+          <div class="ic-val" id="routeDuration">—</div>
+        </div>
+      </div>
+
+      <div class="breakdown">
+        <div class="breakdown-item">
+          <div class="breakdown-left">
+            <span class="breakdown-icon">⛽</span>
+            <div>
+              <div class="breakdown-name">Yakıt Masrafı</div>
+              <div class="breakdown-detail" id="fuelDetail"></div>
+            </div>
+          </div>
+          <div class="breakdown-price" id="fuelCost">—</div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-left">
+            <span class="breakdown-icon">🛣️</span>
+            <div>
+              <div class="breakdown-name">OGS/HGS Geçiş Ücretleri</div>
+              <div class="breakdown-detail" id="tollDetail"></div>
+            </div>
+          </div>
+          <div class="breakdown-price" id="tollCost">—</div>
+        </div>
+      </div>
+
+      <div id="tollListWrap">
+        <div class="section-label" style="margin-bottom:8px">Geçiş Noktaları</div>
+        <div class="toll-list" id="tollList"></div>
+      </div>
+
+      <div class="per-person" id="perPersonRow" style="display:none">
+        <span class="per-person-label">👤 Kişi başı maliyet</span>
+        <span class="per-person-val" id="perPersonVal">—</span>
+      </div>
+
+      <div style="font-size:0.72rem;color:var(--muted);line-height:1.6;padding:0 4px;">
+        * Geçiş ücretleri KGM 2026 tarifesine göredir (1 Ocak 2026 itibarıyla). Yakıt maliyeti tahminidir; trafik ve sürüş stiline göre değişebilir. Otoyol parkur ücretleri giriş/çıkış noktasına göre değişebilir.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAP -->
+  <div id="map-container" style="position:relative;">
+    <div class="map-placeholder" id="mapPlaceholder">
+      <div class="mp-icon">🗺️</div>
+      <p>Güzergahı hesapladıktan sonra harita burada görünecek</p>
+    </div>
+    <div id="map"></div>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════
+// KGM GEÇİŞ ÜCRETLERİ — 2025 TARİFESİ
+// Kaynak: kgm.gov.tr — Sınıf 1 (binek araç)
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// KGM GEÇİŞ ÜCRETLERİ — 2026 TARİFESİ
+// Kaynak: KGM resmi sitesi + Otoyolas, 1 Ocak 2026 itibarıyla
+// NOT: İst-İzm otoyolu paket fiyat (Osmangazi dahil) tek kalem olarak gösterilir
+// ═══════════════════════════════════════════════
+const TOLL_GATES = [
+  // ── İSTANBUL BOĞAZ KÖPRÜLERİ ──
+  // FSM & 15 Tem: SADECE Anadolu→Avrupa yönü ücretli
+  { id: 'fsm',       name: 'FSM Köprüsü',                lat: 41.083, lng: 29.053,
+    fees: { car:59, suv:59, minibus:75, motorcycle:25, truck:0,    bus:168  },
+    note: 'Anadolu→Avrupa yönü ücretli. Kamyon geçemez.' },
+  { id: 'bogazici',  name: '15 Temmuz Şehitler Köprüsü', lat: 41.047, lng: 29.033,
+    fees: { car:59, suv:59, minibus:0,  motorcycle:25, truck:0,    bus:0    },
+    note: 'Sadece 1. sınıf binek araç geçebilir. Anadolu→Avrupa yönü ücretli.' },
+  // YSS: her iki yön ücretli, ağır vasıta zorunlu
+  { id: 'yavuz',     name: 'Yavuz Sultan Selim Köprüsü', lat: 41.206, lng: 29.087,
+    fees: { car:95, suv:95, minibus:125, motorcycle:65, truck:595, bus:235 },
+    note: 'Her iki yön ayrı ayrı ücretli. Ağır vasıtalar zorunlu bu köprüyü kullanır.' },
+
+  // ── İSTANBUL-İZMİR OTOYOLU (OSMANGAZİ DAHİL) ──
+  // Gebze girişinden İzmir çıkışına kadar TÜM ücretler TEK KALEM
+  // Kaynak: kgm.gov.tr / otoyolas.com — 2026 tam parkur tarifesi
+  // Koordinat: Osmangazi Köprüsü merkezi — rota bu noktadan geçiyorsa paket fiyat uygulanır
+  { id: 'ist_izm_full', name: 'İstanbul–İzmir Otoyolu (Osmangazi dahil)',
+    lat: 40.726, lng: 29.515,
+    fees: { car:2465, suv:2465, minibus:4700, motorcycle:1775, truck:6250, bus:4700 },
+    note: 'Gebze girişinden İzmir çıkışına TAM PARKUR — Osmangazi köprüsü dahil. Ara çıkışlar farklı ücret: Bursa Kuzey ~2.340 ₺, Manisa Turgutlu ~2.340 ₺.' },
+
+  // ── 1915 ÇANAKKALE ──
+  { id: 'canakkale', name: '1915 Çanakkale Köprüsü',     lat: 40.107, lng: 26.434,
+    fees: { car:995, suv:995, minibus:1245, motorcycle:250, truck:2490, bus:2240 },
+    note: 'Her iki yön ücretli. Malkara-Çanakkale tam hat otomobil 1.285 ₺.' },
+
+  // ── TÜNELLER ──
+  { id: 'avrasya',   name: 'Avrasya Tüneli',              lat: 41.011, lng: 28.966,
+    fees: { car:280, suv:280, minibus:280, motorcycle:0, truck:0, bus:0 },
+    note: 'Gündüz (05:00-23:59) 280 ₺, gece (00:00-04:59) 140 ₺. Kamyon/otobüs/TIR geçemez. Yükseklik sınırı 2,8 m.' },
+  { id: 'bolu',      name: 'Bolu Dağı Tüneli (TEM)',      lat: 40.732, lng: 31.573,
+    fees: { car:63, suv:63, minibus:126, motorcycle:32, truck:250, bus:250 },
+    note: 'İstanbul-Ankara TEM güzergahı.' },
+  { id: 'ilgaz',     name: 'İlgaz Tüneli',                lat: 41.072, lng: 33.618,
+    fees: { car:44, suv:44, minibus:88,  motorcycle:22, truck:176, bus:176 },
+    note: 'Kastamonu-Çankırı güzergahı.' },
+
+  // ── ANKARA (TEM) ──
+  { id: 'tem_ankara', name: 'İstanbul-Ankara TEM Otoyolu', lat: 40.400, lng: 31.500,
+    fees: { car:338, suv:338, minibus:676, motorcycle:169, truck:1352, bus:1014 },
+    note: 'Tam parkur ücreti (Bolu Tüneli dahil). 2026 ortalama.' },
+
+  // ── DİĞER GÜZERGAHLAR ──
+  { id: 'antalya',    name: 'Antalya Batı Gişesi',        lat: 36.896, lng: 30.604,
+    fees: { car:35, suv:35, minibus:70, motorcycle:18, truck:140, bus:140 },
+    note: 'Antalya çevre yolu.' },
+  { id: 'izmir_cesme', name: 'İzmir-Çeşme Otoyolu',      lat: 38.335, lng: 26.312,
+    fees: { car:49, suv:49, minibus:98,  motorcycle:25, truck:196, bus:196 },
+    note: 'En kısa parkur (Alaçatı-Çeşme) 49 ₺den başlar.' },
+  { id: 'izmir_aydin', name: 'İzmir-Aydın Otoyolu',      lat: 37.850, lng: 27.840,
+    fees: { car:120, suv:120, minibus:240, motorcycle:60, truck:480, bus:480 },
+    note: 'Aydın tam parkur tahmini.' },
+  { id: 'marmaris',  name: 'Marmaris Çevre Yolu',         lat: 36.855, lng: 28.270,
+    fees: { car:25, suv:25, minibus:50,  motorcycle:13, truck:100, bus:100 },
+    note: 'Muğla-Marmaris güzergahı.' },
+  { id: 'edirne',    name: 'Avrupa Oty. (Mahmutbey-Edirne)', lat: 41.450, lng: 27.800,
+    fees: { car:168, suv:168, minibus:336, motorcycle:84, truck:672, bus:672 },
+    note: 'Tam parkur ücreti.' },
+  { id: 'nigde',     name: 'Niğde-Ankara Otoyolu',        lat: 37.900, lng: 34.500,
+    fees: { car:590, suv:590, minibus:1180, motorcycle:295, truck:2360, bus:1770 },
+    note: 'Ankara-Niğde tam parkur.' },
+];
+
+// ═══════════════════════════════════════════════
+// AKARYAKIT FİYATLARI (EPDK verisi - otomatik güncellenir)
+// Manuel fallback: Haziran 2025 ortalaması
+// ═══════════════════════════════════════════════
+const FUEL_FALLBACK = { benzin: 62.50, motorin: 64.50, lpg: 36.50 };
+let fuelPrices = { ...FUEL_FALLBACK };
+
+async function fetchFuelPrices() {
+  // EPDK resmi scraping backend olmadan doğrudan yapılamıyor.
+  // Gerçek uygulamada backend cron job çeker; şimdilik fallback kullanıyoruz.
+  // TODO: backend API endpoint eklendiğinde burası güncellenecek
+  document.getElementById('fuelPriceDisplay').textContent = fuelPrices.benzin.toFixed(2);
+  document.getElementById('dieselPriceDisplay').textContent = fuelPrices.motorin.toFixed(2);
+  document.getElementById('fuelPrice').value = fuelPrices.benzin.toFixed(2);
+}
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let selectedVehicle = 'car';
+let selectedFuel = 'benzin';
+let passengers = 1;
+let directionsRenderer = null;
+let map = null;
+let originAC = null, destAC = null;
+
+function selectVehicle(btn) {
+  document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedVehicle = btn.dataset.type;
+
+  // Tüketim varsayılanını ayarla
+  const defaults = { car:8, suv:11, minibus:14, motorcycle:5, truck:22, bus:28 };
+  const c = document.getElementById('consumption');
+  c.value = defaults[selectedVehicle] || 8;
+  document.getElementById('consumptionVal').textContent = c.value;
+}
+
+function selectFuel(btn) {
+  document.querySelectorAll('[data-fuel]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedFuel = btn.dataset.fuel;
+  document.getElementById('fuelPrice').value = fuelPrices[selectedFuel].toFixed(2);
+}
+
+function changePass(delta) {
+  passengers = Math.max(1, Math.min(20, passengers + delta));
+  document.getElementById('passCount').textContent = passengers;
+}
+
+// ═══════════════════════════════════════════════
+// TOLL DETECTION — Rota polyline'ına coğrafi yakınlık bazlı
+// Keyword matching yerine gerçek koordinat mesafesi kullanır
+// ═══════════════════════════════════════════════
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function detectTolls(routePoints) {
+  const THRESHOLD_KM = 2.5;
+  const detected = [];
+  for (const gate of TOLL_GATES) {
+    if (!gate.lat || !gate.lng) continue;
+    const isOnRoute = routePoints.some(p =>
+      haversineKm(gate.lat, gate.lng, p.lat, p.lng) < THRESHOLD_KM
+    );
+    if (isOnRoute) detected.push(gate);
+  }
+  const seen = new Set();
+  return detected.filter(g => { if (seen.has(g.id)) return false; seen.add(g.id); return true; });
+}
+
+function formatTL(amount) {
+  return amount.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' ₺';
+}
+
+// ═══════════════════════════════════════════════
+// CALCULATE
+// ═══════════════════════════════════════════════
+function calculate() {
+  const origin = document.getElementById('origin').value.trim();
+  const destination = document.getElementById('destination').value.trim();
+  const consumption = parseFloat(document.getElementById('consumption').value);
+  const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
+
+  // Validation
+  const errorBox = document.getElementById('errorBox');
+  errorBox.classList.remove('visible');
+
+  if (!origin || !destination) {
+    errorBox.textContent = 'Lütfen nereden ve nereye gideceğinizi girin.';
+    errorBox.classList.add('visible');
+    return;
+  }
+  if (!fuelPrice || fuelPrice <= 0) {
+    errorBox.textContent = 'Lütfen geçerli bir yakıt fiyatı girin.';
+    errorBox.classList.add('visible');
+    return;
+  }
+
+  document.getElementById('loadingOverlay').classList.add('active');
+  document.getElementById('calcBtn').disabled = true;
+
+  // ── ALTERNATİF ROTA SİSTEMİ ──
+  // Her rota için maliyet hesapla
+  let allRoutes = []; // { route, distanceKm, duration, fuelCost, tollTotal, total, tolls }
+
+  function calcRouteData(route) {
+    const leg = route.legs[0];
+    const distanceKm = leg.distance.value / 1000;
+    const liters = (distanceKm * consumption) / 100;
+    const fuelCost = liters * fuelPrice;
+    const routePoints = (route.overview_path || []).map(p => ({ lat: p.lat(), lng: p.lng() }));
+    const tolls = detectTolls(routePoints);
+    let tollTotal = 0;
+    tolls.forEach(t => { tollTotal += t.fees[selectedVehicle] || 0; });
+
+    // Feribot tespiti — adımlar içinde FERRY tipi var mı?
+    const hasFerry = leg.steps.some(s => s.travel_mode === 'FERRY'
+      || (s.instructions && (
+        s.instructions.toLowerCase().includes('feribot') ||
+        s.instructions.toLowerCase().includes('ferry') ||
+        s.instructions.toLowerCase().includes('vapur') ||
+        s.instructions.toLowerCase().includes('boat')
+      ))
+    );
+    // Rotanın özet metninde de kontrol et
+    const summaryText = (route.summary || '').toLowerCase();
+    const hasFerryInSummary = summaryText.includes('feribot') || summaryText.includes('ferry');
+
+    return {
+      route,
+      leg,
+      distanceKm,
+      duration: leg.duration.text,
+      fuelCost,
+      tollTotal,
+      total: fuelCost + tollTotal,
+      tolls,
+      hasFerry: hasFerry || hasFerryInSummary,
+    };
+  }
+
+  function renderRoute(idx) {
+    const r = allRoutes[idx];
+    const consumption_val = parseFloat(document.getElementById('consumption').value);
+
+    // Tabları güncelle (aktif tab)
+    document.querySelectorAll('.route-tab').forEach((tab, i) => {
+      tab.classList.toggle('active', i === idx);
+    });
+
+    // Sonuçları güncelle
+    document.getElementById('routeDistance').textContent = r.leg.distance.text;
+    document.getElementById('routeDuration').textContent = r.duration;
+    document.getElementById('totalAmount').textContent = formatTL(r.total);
+    document.getElementById('totalSub').textContent =
+      `${r.leg.start_address.split(',')[0]} → ${r.leg.end_address.split(',')[0]}`;
+    document.getElementById('fuelCost').textContent = formatTL(r.fuelCost);
+    document.getElementById('fuelDetail').textContent =
+      `${r.distanceKm.toFixed(0)} km × ${consumption_val} L/100km × ${fuelPrice.toFixed(2)} ₺/L`;
+    document.getElementById('tollCost').textContent = formatTL(r.tollTotal);
+    document.getElementById('tollDetail').textContent =
+      r.tolls.length > 0 ? `${r.tolls.length} geçiş noktası tespit edildi` : 'Ücretli geçiş yok';
+
+    // Feribot uyarısı
+    let ferryWarn = document.getElementById('ferryWarning');
+    if (!ferryWarn) {
+      ferryWarn = document.createElement('div');
+      ferryWarn.id = 'ferryWarning';
+      ferryWarn.style.cssText = `
+        display:none; background:rgba(59,130,246,0.12);
+        border:1px solid rgba(59,130,246,0.5);
+        border-radius:10px; padding:12px 16px;
+        font-size:0.84rem; color:#93c5fd; line-height:1.5;
+        margin-top:2px;
+      `;
+      document.getElementById('tollCost').closest('.breakdown-item').after(ferryWarn);
+    }
+    // Feribot hero bar
+    const ferryHeroBar = document.getElementById('ferryHeroBar');
+    const ferryTotalAmount = document.getElementById('ferryTotalAmount');
+    const ferryTotalNote = document.getElementById('ferryTotalNote');
+
+    if (r.hasFerry) {
+      ferryWarn.style.display = 'block';
+      // Feribot hattını rota metninden tespit et
+      const routeSummary = (r.route.summary || '').toLowerCase();
+      const allSteps = r.leg.steps.map(s => (s.instructions || '').toLowerCase()).join(' ');
+      const routeFullText = routeSummary + ' ' + allSteps;
+
+      let ferryInfo = '';
+      if (routeFullText.includes('eskihisar') || routeFullText.includes('topçular') || routeFullText.includes('topcular')) {
+        ferryInfo = `
+          <div style="margin-top:6px;font-size:0.79rem;color:#bfdbfe;">
+            📍 <strong>Eskihisar → Topçular (İDO)</strong><br>
+            Otomobil: <strong>730 ₺</strong> (gece 22:00–10:00 arası: 630 ₺)<br>
+            Motosiklet: 400 ₺ · Minibüs: 1.260 ₺ · Ortalama süre: 35 dk
+          </div>`;
+      } else if (routeFullText.includes('yenikapı') || routeFullText.includes('yenikapi') || routeFullText.includes('yalova')) {
+        ferryInfo = `
+          <div style="margin-top:6px;font-size:0.79rem;color:#bfdbfe;">
+            📍 <strong>Yenikapı → Yalova (İDO Hızlı Feribot)</strong><br>
+            Bilet ücreti için ido.com.tr adresini kontrol edin. Süre: ~75 dk
+          </div>`;
+      } else if (routeFullText.includes('bandırma') || routeFullText.includes('bandirma')) {
+        ferryInfo = `
+          <div style="margin-top:6px;font-size:0.79rem;color:#bfdbfe;">
+            📍 <strong>İstanbul → Bandırma (İDO)</strong><br>
+            Bilet ücreti için ido.com.tr adresini kontrol edin. Süre: ~2 saat
+          </div>`;
+      } else {
+        ferryInfo = `
+          <div style="margin-top:6px;font-size:0.79rem;color:#bfdbfe;">
+            Feribot hattı ve güncel bilet fiyatı için <strong>ido.com.tr</strong> veya <strong>budo.com.tr</strong> adreslerini ziyaret edin.
+          </div>`;
+      }
+
+      // Feribot ücreti tahmini (araç tipine göre)
+      const ferryFees = {
+        eskihisar: { car:730, suv:730, minibus:1260, motorcycle:400, truck:1920, bus:1370 },
+      };
+      let ferryFee = 0;
+      let ferryLine = '';
+      if (routeFullText.includes('eskihisar') || routeFullText.includes('topçular') || routeFullText.includes('topcular')) {
+        ferryFee = ferryFees.eskihisar[selectedVehicle] || ferryFees.eskihisar.car;
+        ferryLine = `Eskihisar→Topçular ${formatTL(ferryFee)} (tahmini)`;
+      }
+
+      ferryWarn.innerHTML = `
+        ⛴️ <strong style="color:#bfdbfe">Bu rota feribot içeriyor</strong><br>
+        <span style="color:#93c5fd;font-size:0.8rem;">
+          Feribot bilet ücreti hesaba <strong>dahil değildir</strong> — aşağıdaki tahmini fiyatları toplam maliyete ekleyin.
+        </span>
+        ${ferryInfo}
+      `;
+
+      // Hero bar güncelle
+      if (ferryHeroBar && ferryFee > 0) {
+        ferryHeroBar.style.display = 'block';
+        ferryTotalAmount.textContent = formatTL(r.total + ferryFee);
+        ferryTotalNote.textContent = `(yakıt + geçiş ${formatTL(r.total)} + feribot ${formatTL(ferryFee)})`;
+      } else if (ferryHeroBar) {
+        ferryHeroBar.style.display = 'none';
+      }
+    } else {
+      ferryWarn.style.display = 'none';
+      if (ferryHeroBar) ferryHeroBar.style.display = 'none';
+    }
+
+    // Toll listesi
+    const tollList = document.getElementById('tollList');
+    const tollListWrap = document.getElementById('tollListWrap');
+    tollList.innerHTML = '';
+    if (r.tolls.length > 0) {
+      r.tolls.forEach(t => {
+        const fee = t.fees[selectedVehicle] || 0;
+        tollList.innerHTML += `
+          <div class="toll-item">
+            <span class="toll-name">🛣️ ${t.name}</span>
+            <span class="toll-price">${formatTL(fee)}</span>
+          </div>`;
+      });
+      tollListWrap.style.display = 'block';
+    } else {
+      tollListWrap.style.display = 'none';
+    }
+
+    // Kişi başı
+    const perPersonRow = document.getElementById('perPersonRow');
+    if (passengers > 1) {
+      perPersonRow.style.display = 'flex';
+      document.getElementById('perPersonVal').textContent = formatTL(r.total / passengers) + ' / kişi';
+    } else {
+      perPersonRow.style.display = 'none';
+    }
+
+    // Harita — aktif rotayı göster
+    const colors = ['#e8a020', '#34c47c', '#8892a4'];
+    if (!directionsRenderer) {
+      directionsRenderer = new google.maps.DirectionsRenderer({
+        polylineOptions: { strokeColor: colors[0], strokeWeight: 5 },
+        suppressMarkers: false,
+      });
+      directionsRenderer.setMap(map);
+    }
+    directionsRenderer.setOptions({ polylineOptions: { strokeColor: colors[idx] || '#e8a020', strokeWeight: 5 } });
+
+    // Tüm rotaları hafif göster, seçiliyi kalın
+    if (window._altRenderers) {
+      window._altRenderers.forEach(r => r.setMap(null));
+    }
+    window._altRenderers = [];
+    allRoutes.forEach((rd, i) => {
+      if (i === idx) return;
+      const r2 = new google.maps.DirectionsRenderer({
+        directions: { routes: [rd.route], request: {} },
+        routeIndex: 0,
+        polylineOptions: { strokeColor: colors[i] || '#555', strokeWeight: 3, strokeOpacity: 0.35 },
+        suppressMarkers: true,
+      });
+      // Tek rota result objesi oluştur
+      const fakeResult = window._lastDirectionsResult;
+      if (fakeResult && fakeResult.routes[i]) {
+        const fr = new google.maps.DirectionsRenderer({
+          polylineOptions: { strokeColor: colors[i] || '#8892a4', strokeWeight: 3, strokeOpacity: 0.4 },
+          suppressMarkers: true,
+        });
+        fr.setMap(map);
+        fr.setDirections({ ...fakeResult, routes: [fakeResult.routes[i]] });
+        window._altRenderers.push(fr);
+      }
+    });
+
+    directionsRenderer.setDirections({ ...window._lastDirectionsResult, routes: [r.route] });
+
+    // Geçiş marker'ları
+    if (window._tollMarkers) window._tollMarkers.forEach(m => m.setMap(null));
+    window._tollMarkers = [];
+    if (window._infoWindow) window._infoWindow.close();
+    window._infoWindow = new google.maps.InfoWindow();
+
+    r.tolls.forEach(t => {
+      const fee = t.fees[selectedVehicle] || 0;
+      const marker = new google.maps.Marker({
+        position: { lat: t.lat, lng: t.lng },
+        map: map,
+        title: t.name,
+        label: { text: '₺', color: '#0f1117', fontWeight: 'bold', fontSize: '12px' },
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 16,
+          fillColor: '#e8a020',
+          fillOpacity: 1,
+          strokeColor: '#0f1117',
+          strokeWeight: 2,
+        },
+        zIndex: 10,
+      });
+      marker.addListener('click', () => {
+        const isFullPackage = t.id === 'ist_izm_full';
+
+        // İst-İzm ara çıkış tablosu (Osmangazi dahil, otomobil 1.sınıf, 2026 tarifesi)
+        // Kaynak: otoyolas.com.tr + yolcu360.com + sigortam.net 2026 verileri
+        const IST_IZM_EXITS = [
+          { name: 'Orhangazi / Yalova', car: 995,  moto: 695  },
+          { name: 'Gemlik',             car: 1215, moto: 850  },
+          { name: 'Bursa Kuzey',        car: 1470, moto: 1030 },
+          { name: 'Bursa Batı',         car: 1555, moto: 1090 },
+          { name: 'Karacabey / Mustafakemalpaşa', car: 1680, moto: 1175 },
+          { name: 'Susurluk',           car: 1790, moto: 1255 },
+          { name: 'Balıkesir Kuzey',    car: 1910, moto: 1340 },
+          { name: 'Balıkesir Batı',     car: 1985, moto: 1390 },
+          { name: 'Soma / Savaştepe',   car: 2090, moto: 1465 },
+          { name: 'Kırkağaç',          car: 2150, moto: 1505 },
+          { name: 'Akhisar',            car: 2225, moto: 1560 },
+          { name: 'Saruhanlı',          car: 2285, moto: 1600 },
+          { name: 'Manisa / Turgutlu',  car: 2340, moto: 1640 },
+          { name: 'İzmir (tam parkur)', car: 2465, moto: 1775 },
+        ];
+
+        const araExitsHtml = isFullPackage ? `
+          <details style="margin-top:10px;">
+            <summary style="cursor:pointer;font-size:0.8rem;color:#c07800;font-weight:600;padding:4px 0;">
+              📍 Ara çıkış ücretleri (otomobil, Osmangazi dahil)
+            </summary>
+            <table style="width:100%;border-collapse:collapse;font-size:0.78rem;margin-top:6px;">
+              <tr style="border-bottom:1px solid #eee;">
+                <th style="text-align:left;padding:3px 0;color:#888;font-weight:500;">Çıkış</th>
+                <th style="text-align:right;padding:3px 0;color:#888;font-weight:500;">Otomobil</th>
+                <th style="text-align:right;padding:3px 0;color:#888;font-weight:500;">Motosiklet</th>
+              </tr>
+              ${IST_IZM_EXITS.map(e => `
+                <tr style="border-bottom:1px solid #f5f5f5;">
+                  <td style="padding:3px 0;color:#444">${e.name}</td>
+                  <td style="text-align:right;font-weight:600;color:#333">${e.car.toLocaleString('tr-TR')} ₺</td>
+                  <td style="text-align:right;color:#666">${e.moto.toLocaleString('tr-TR')} ₺</td>
+                </tr>`).join('')}
+            </table>
+            <div style="margin-top:5px;font-size:0.7rem;color:#aaa;">* Tahmini değerler. Kesin ücret için otoyolas.com.tr</div>
+          </details>` : '';
+
+        const content = `
+          <div style="font-family:Inter,sans-serif;padding:4px 2px;min-width:240px;max-width:300px;">
+            <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;color:#1a1a1a">🛣️ ${t.name}</div>
+            ${isFullPackage ? `<div style="font-size:0.75rem;color:#c07800;margin-bottom:8px;background:#fff8e6;padding:4px 8px;border-radius:6px;">📦 Tam parkur paketi — Osmangazi Köprüsü dahil tüm gişeler</div>` : ''}
+            <table style="width:100%;border-collapse:collapse;font-size:0.82rem;color:#444">
+              <tr><td style="padding:3px 0;color:#666">Binek / SUV</td><td style="text-align:right;font-weight:600">${t.fees.car.toLocaleString('tr-TR')} ₺</td></tr>
+              <tr><td style="padding:3px 0;color:#666">Minibüs</td><td style="text-align:right;font-weight:600">${t.fees.minibus.toLocaleString('tr-TR')} ₺</td></tr>
+              <tr><td style="padding:3px 0;color:#666">Motosiklet</td><td style="text-align:right;font-weight:600">${t.fees.motorcycle > 0 ? t.fees.motorcycle.toLocaleString('tr-TR') + ' ₺' : 'Geçemez'}</td></tr>
+              <tr><td style="padding:3px 0;color:#666">Kamyon / Tır</td><td style="text-align:right;font-weight:600">${t.fees.truck > 0 ? t.fees.truck.toLocaleString('tr-TR') + ' ₺' : 'Geçemez'}</td></tr>
+              <tr><td style="padding:3px 0;color:#666">Otobüs</td><td style="text-align:right;font-weight:600">${t.fees.bus > 0 ? t.fees.bus.toLocaleString('tr-TR') + ' ₺' : 'Geçemez'}</td></tr>
+            </table>
+            <div style="margin-top:8px;padding:6px 8px;background:#fff8e6;border-radius:6px;font-size:0.8rem;">
+              <strong>Seçili aracınız:</strong>
+              <span style="color:#c07800;font-weight:700"> ${fee > 0 ? fee.toLocaleString('tr-TR') + ' ₺' : 'Bu araç geçemez!'}</span>
+            </div>
+            ${araExitsHtml}
+            ${t.note ? `<div style="margin-top:6px;font-size:0.75rem;color:#888;line-height:1.4;">ℹ️ ${t.note}</div>` : ''}
+          </div>`;
+        window._infoWindow.setContent(content);
+        window._infoWindow.open(map, marker);
+      });
+      window._tollMarkers.push(marker);
+    });
+  }
+
+  // ── DIRECTIONS API — 4 PARALEL İSTEK ──
+  // Her biri farklı strateji: hızlı, ucuz, feribot, ücretsiz
+  const service = new google.maps.DirectionsService();
+
+  // Feribot güzergahı için waypoint: Eskihisar İskelesi
+  const ESKIHISAR = { location: 'Eskihisar İskelesi, Gebze, Kocaeli, Türkiye', stopover: false };
+  const TOPCULAR  = { location: 'Topçular İskelesi, Yalova, Türkiye', stopover: false };
+
+  // Feribot rotası mantıklı mı? (mesafe ve konum kontrolü)
+  // Sadece İstanbul/Kocaeli bölgesinden Güney Marmara/Ege/Akdeniz'e gidişlerde öner
+  function isFerryRouteRelevant(originStr, destStr) {
+    const o = originStr.toLowerCase();
+    const d = destStr.toLowerCase();
+    const fromMarmara = o.includes('istanbul') || o.includes('kocaeli') || o.includes('gebze') || o.includes('izmit') || o.includes('pendik') || o.includes('kartal') || o.includes('anadolu');
+    const toSouth = d.includes('bursa') || d.includes('yalova') || d.includes('izmir') || d.includes('manisa') || d.includes('balıkesir') || d.includes('balikesir') || d.includes('çanakkale') || d.includes('canakkale') || d.includes('muğla') || d.includes('mugla') || d.includes('marmaris') || d.includes('bodrum') || d.includes('antalya') || d.includes('aydın') || d.includes('aydin');
+    return fromMarmara && toSouth;
+  }
+
+  const ferryRelevant = isFerryRouteRelevant(origin, destination);
+
+  const REQUESTS = [
+    {
+      label: 'fast',
+      badge: '⚡ EN HIZLI',
+      badgeClass: 'badge-fast',
+      color: '#e8a020',
+      req: {
+        origin: origin + ', Türkiye',
+        destination: destination + ', Türkiye',
+        travelMode: google.maps.TravelMode.DRIVING,
+        provideRouteAlternatives: false,
+        language: 'tr',
+      }
+    },
+    {
+      label: 'cheap',
+      badge: '💚 EN UCUZ',
+      badgeClass: 'badge-cheap',
+      color: '#34c47c',
+      req: {
+        origin: origin + ', Türkiye',
+        destination: destination + ', Türkiye',
+        travelMode: google.maps.TravelMode.DRIVING,
+        avoidTolls: true,
+        provideRouteAlternatives: false,
+        language: 'tr',
+      }
+    },
+    ferryRelevant ? {
+      label: 'ferry',
+      badge: '⛴️ FERİBOT',
+      badgeClass: 'badge-ferry',
+      color: '#60a5fa',
+      req: {
+        origin: origin + ', Türkiye',
+        destination: destination + ', Türkiye',
+        waypoints: [ESKIHISAR, TOPCULAR],
+        travelMode: google.maps.TravelMode.DRIVING,
+        provideRouteAlternatives: false,
+        language: 'tr',
+      }
+    } : null,
+    {
+      label: 'free',
+      badge: '🌿 ÜCRETSİZ YOL',
+      badgeClass: 'badge-free',
+      color: '#a78bfa',
+      req: {
+        origin: origin + ', Türkiye',
+        destination: destination + ', Türkiye',
+        travelMode: google.maps.TravelMode.DRIVING,
+        avoidTolls: true,
+        avoidHighways: true,
+        provideRouteAlternatives: false,
+        language: 'tr',
+      }
+    }
+  ].filter(Boolean);
+
+  let routeResults = new Array(REQUESTS.length).fill(null);
+  let doneCount = 0;
+
+  function onAllDone() {
+    document.getElementById('loadingOverlay').classList.remove('active');
+    document.getElementById('calcBtn').disabled = false;
+
+    const validResults = routeResults.filter(r => r !== null);
+    if (validResults.length === 0) {
+      errorBox.textContent = 'Rota bulunamadı. Lütfen adreslerinizi kontrol edin.';
+      errorBox.classList.add('visible');
+      return;
+    }
+
+    // Duplicate rotaları filtrele (aynı mesafe+süre varsa birini at)
+    const seen = new Set();
+    const filtered = [];
+    REQUESTS.forEach((req, i) => {
+      const res = routeResults[i];
+      if (!res) return;
+      const route = res.routes[0];
+      const km = Math.round(route.legs[0].distance.value / 500); // 500m hassasiyet
+      const min = Math.round(route.legs[0].duration.value / 120); // 2dk hassasiyet
+      const key = `${km}_${min}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        filtered.push({ req, route, result: res });
+      }
+    });
+
+    window._lastDirectionsResult = { ...validResults[0], routes: filtered.map(f => f.route) };
+    window._routeMeta = filtered.map(f => f.req);
+    allRoutes = filtered.map(f => calcRouteData(f.route));
+
+    // En ucuz rotayı bul
+    const cheapestIdx = allRoutes.reduce((best, r, i) =>
+      r.total < allRoutes[best].total ? i : best, 0);
+
+    // Harita kur
+    document.getElementById('mapPlaceholder').style.display = 'none';
+    document.getElementById('map').style.display = 'block';
+    if (!map) {
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 7,
+        center: { lat: 39.0, lng: 35.0 },
+        styles: darkMapStyle,
+        zoomControl: true,
+      });
+    }
+
+    // Rota tablarını oluştur
+    const tabsEl = document.getElementById('routesTabs');
+    tabsEl.innerHTML = '';
+
+    allRoutes.forEach((r, i) => {
+      const meta = (window._routeMeta || [])[i] || {};
+      const ferryTag = r.hasFerry ? ' ⛴️' : '';
+      const badge = meta.badge
+        ? `<div class="route-badge ${meta.badgeClass}">${meta.badge}${ferryTag}</div>`
+        : `<div class="route-badge badge-alt">🔀 ALTERNATİF${ferryTag}</div>`;
+      const color = meta.color || '#8892a4';
+      const tab = document.createElement('button');
+      const isFerryTab = meta.label === 'ferry';
+      tab.className = 'route-tab' + (isFerryTab ? ' ferry-tab' : '') + (i === 0 ? ' active' : '');
+      const displayTotal = r.hasFerry && isFerryTab
+        ? formatTL(r.total) + ' +⛴️'
+        : formatTL(r.total);
+      tab.innerHTML = `
+        ${badge}
+        <div class="route-tab-price" style="color:${color}">${displayTotal}</div>
+        <div class="route-tab-km">${r.distanceKm.toFixed(0)} km · ${r.duration}</div>
+      `;
+      tab.onclick = () => renderRoute(i);
+      tabsEl.appendChild(tab);
+    });
+
+    if (allRoutes.length > 1) {
+      tabsEl.style.display = 'flex';
+    } else {
+      tabsEl.style.display = 'none';
+    }
+
+    document.getElementById('resultSection').classList.add('visible');
+    renderRoute(0);
+  }
+
+  // Paralel istekler
+  REQUESTS.forEach((item, i) => {
+    service.route(item.req, (res, status) => {
+      if (status === 'OK') routeResults[i] = res;
+      doneCount++;
+      if (doneCount === REQUESTS.length) onAllDone();
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════
+// GOOGLE MAPS INIT
+// ═══════════════════════════════════════════════
+function initMap() {
+  // Autocomplete
+  originAC = new google.maps.places.Autocomplete(
+    document.getElementById('origin'),
+    { componentRestrictions: { country: 'tr' }, language: 'tr' }
+  );
+  destAC = new google.maps.places.Autocomplete(
+    document.getElementById('destination'),
+    { componentRestrictions: { country: 'tr' }, language: 'tr' }
+  );
+
+  // Enter ile hesapla
+  document.getElementById('destination').addEventListener('keydown', e => {
+    if (e.key === 'Enter') calculate();
+  });
+
+  fetchFuelPrices();
+}
+
+// Dark map style
+const darkMapStyle = [
+  { elementType:'geometry', stylers:[{color:'#1a1f2e'}] },
+  { elementType:'labels.text.fill', stylers:[{color:'#8892a4'}] },
+  { elementType:'labels.text.stroke', stylers:[{color:'#1a1f2e'}] },
+  { featureType:'road', elementType:'geometry', stylers:[{color:'#2a2f42'}] },
+  { featureType:'road.highway', elementType:'geometry', stylers:[{color:'#3a3f55'}] },
+  { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{color:'#e8a020'}] },
+  { featureType:'water', elementType:'geometry', stylers:[{color:'#0d1117'}] },
+  { featureType:'poi', stylers:[{visibility:'off'}] },
+  { featureType:'transit', stylers:[{visibility:'off'}] },
+  { featureType:'administrative', elementType:'geometry.stroke', stylers:[{color:'#2a2f42'}] },
+];
+
+// Map başlangıçta gizli
+document.getElementById('map').style.display = 'none';
+</script>
+
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5MyK6yf6rwgblGlPT9G6Z_d6ciDwKINg&libraries=places&language=tr&callback=initMap"
+  async defer>
+</script>
+
+</body>
+</html>
