@@ -754,7 +754,7 @@ const TOLL_GATES = [
   { id: 'ist_izm_full', name: 'İstanbul–İzmir Otoyolu (Osmangazi dahil)',
     lat: 40.726, lng: 29.515,
     fees: { car:2640, suv:2640, minibus:5080, motorcycle:1950, truck:6600, bus:5080 },
-    note: 'Gebze girişinden İzmir çıkışına TAM PARKUR — Osmangazi köprüsü dahil. Ara çıkışlar farklı ücret: Bursa Kuzey ~2.340 ₺, Manisa Turgutlu ~2.340 ₺.' },
+    note: 'Gebze girişinden İzmir çıkışına TAM PARKUR — Osmangazi köprüsü dahil. Ara çıkışlar farklı ücret: Bursa Kuzey ~1.645 ₺, Manisa Turgutlu ~2.515 ₺. (1 Temmuz 2026 tarifesi)' },
 
   // ── 1915 ÇANAKKALE ──
   { id: 'canakkale', name: '1915 Çanakkale Köprüsü',     lat: 40.107, lng: 26.434,
@@ -1147,20 +1147,20 @@ function calculate() {
         // İst-İzm ara çıkış tablosu (Osmangazi dahil, otomobil 1.sınıf, 2026 tarifesi)
         // Kaynak: otoyolas.com.tr + yolcu360.com + sigortam.net 2026 verileri
         const IST_IZM_EXITS = [
-          { name: 'Orhangazi / Yalova', car: 995,  moto: 695  },
-          { name: 'Gemlik',             car: 1215, moto: 850  },
-          { name: 'Bursa Kuzey',        car: 1470, moto: 1030 },
-          { name: 'Bursa Batı',         car: 1555, moto: 1090 },
-          { name: 'Karacabey / Mustafakemalpaşa', car: 1680, moto: 1175 },
-          { name: 'Susurluk',           car: 1790, moto: 1255 },
-          { name: 'Balıkesir Kuzey',    car: 1910, moto: 1340 },
-          { name: 'Balıkesir Batı',     car: 1985, moto: 1390 },
-          { name: 'Soma / Savaştepe',   car: 2090, moto: 1465 },
-          { name: 'Kırkağaç',          car: 2150, moto: 1505 },
-          { name: 'Akhisar',            car: 2225, moto: 1560 },
-          { name: 'Saruhanlı',          car: 2285, moto: 1600 },
-          { name: 'Manisa / Turgutlu',  car: 2340, moto: 1640 },
-          { name: 'İzmir (tam parkur)', car: 2465, moto: 1775 },
+          { name: 'Orhangazi / Yalova', car: 1170, moto: 820  },
+          { name: 'Gemlik',             car: 1390, moto: 975  },
+          { name: 'Bursa Kuzey',        car: 1645, moto: 1150 },
+          { name: 'Bursa Batı',         car: 1730, moto: 1210 },
+          { name: 'Karacabey / Mustafakemalpaşa', car: 1855, moto: 1300 },
+          { name: 'Susurluk',           car: 1965, moto: 1380 },
+          { name: 'Balıkesir Kuzey',    car: 2085, moto: 1465 },
+          { name: 'Balıkesir Batı',     car: 2160, moto: 1515 },
+          { name: 'Soma / Savaştepe',   car: 2265, moto: 1590 },
+          { name: 'Kırkağaç',          car: 2325, moto: 1630 },
+          { name: 'Akhisar',            car: 2400, moto: 1685 },
+          { name: 'Saruhanlı',          car: 2460, moto: 1725 },
+          { name: 'Manisa / Turgutlu',  car: 2515, moto: 1765 },
+          { name: 'İzmir (tam parkur)', car: 2640, moto: 1950 },
         ];
 
         const araExitsHtml = isFullPackage ? `
