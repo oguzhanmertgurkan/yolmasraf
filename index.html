@@ -582,9 +582,48 @@
     .location-btn.loading { animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
+    .fuel-items { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .fuel-item { white-space: nowrap; }
+    .fuel-sep { opacity: 0.4; }
+    .fuel-unit { white-space: nowrap; }
+    .map-back, .map-jump { display: none; }
+
     @media (max-width: 768px) {
+      header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+      .logo { font-size: 1.2rem; }
+      .fuel-badge { width: 100%; justify-content: center; padding: 7px 12px; font-size: 0.74rem; }
+      .fuel-items { gap: 6px; flex-wrap: nowrap; }
+      .fuel-badge strong { font-size: 0.84rem; }
       main { grid-template-columns: 1fr; }
-      #map-container { min-height: 300px; }
+      .panel { padding: 20px 16px 24px; border-right: none; overflow: visible; gap: 22px; }
+      /* iOS yazı alanına dokununca yakınlaştırmasın */
+      input, select, textarea { font-size: 16px !important; }
+      .routes-tabs { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .route-tab { padding: 10px 8px; }
+      .route-tab-price { white-space: nowrap; font-size: 1rem; }
+      .route-tab-km { font-size: 0.72rem; }
+      .ev-list { max-height: none; overflow: visible; padding-right: 0; }
+      .map-jump {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%; padding: 12px; border-radius: 14px; cursor: pointer;
+        background: rgba(120,205,176,0.12); border: 1.5px solid #78cdb0; color: #78cdb0;
+        font-family: inherit; font-size: 0.9rem; font-weight: 700;
+      }
+      #map-container { height: 70vh; min-height: 380px; }
+      #map { min-height: 0; }
+      .map-placeholder { display: none !important; }
+      #map-container:not(.has-map) { display: none; }
+      .map-back {
+        display: block; position: absolute; top: 10px; left: 10px; z-index: 5;
+        background: var(--surface); color: var(--text); border: 1px solid var(--border);
+        border-radius: 999px; padding: 8px 14px; font-family: inherit; font-size: 0.8rem; font-weight: 700;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.35); cursor: pointer;
+      }
+    }
+    @media (max-width: 380px) {
+      .vehicle-grid { gap: 6px; }
+      .fuel-badge { font-size: 0.7rem; }
+      .fuel-items { gap: 4px; }
     }
 
     /* ── ELEKTRİKLİ / YAKIT NOTU ── */
@@ -662,10 +701,13 @@
   <div class="logo"><span class="logo-mark"><svg class="i" aria-hidden="true"><use href="#i-route"/></svg></span><div>Yol<span>Masraf</span></div></div>
   <div class="fuel-badge" id="fuelBadge">
     <div class="fuel-dot"></div>
-    <div>
-      Benzin <strong id="fuelPriceDisplay">—</strong> &nbsp;|&nbsp;
-      Motorin <strong id="dieselPriceDisplay">—</strong> &nbsp;|&nbsp;
-      LPG <strong id="lpgPriceDisplay">—</strong> ₺/L
+    <div class="fuel-items">
+      <span class="fuel-item">Benzin <strong id="fuelPriceDisplay">—</strong></span>
+      <span class="fuel-sep">|</span>
+      <span class="fuel-item">Motorin <strong id="dieselPriceDisplay">—</strong></span>
+      <span class="fuel-sep">|</span>
+      <span class="fuel-item">LPG <strong id="lpgPriceDisplay">—</strong></span>
+      <span class="fuel-unit">₺/L</span>
     </div>
   </div>
 </header>
@@ -822,6 +864,8 @@
         </div>
       </div>
 
+      <button type="button" class="map-jump" id="mapJump"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg> Haritada göster</button>
+
       <div class="route-info">
         <div class="info-card">
           <div class="ic-label"><svg class="i" aria-hidden="true"><use href="#i-route"/></svg> Mesafe</div>
@@ -893,6 +937,7 @@
       <p>Güzergahı hesapladıktan sonra harita burada görünecek</p>
     </div>
     <div id="map"></div>
+    <button type="button" class="map-back" id="mapBack" aria-label="Sonuçlara dön">&#8593; Sonuçlar</button>
   </div>
 
 </main>
@@ -1600,6 +1645,7 @@ function calculate() {
 
     // Harita kur
     document.getElementById('mapPlaceholder').style.display = 'none';
+    document.getElementById('map-container').classList.add('has-map');
     document.getElementById('map').style.display = 'block';
     if (!map) {
       map = new google.maps.Map(document.getElementById('map'), {
@@ -1644,6 +1690,12 @@ function calculate() {
 
     document.getElementById('resultSection').classList.add('visible');
     renderRoute(0);
+    // Telefonda sonuçlar ekranın altında kalmasın
+    if (isMobile()) setTimeout(() => {
+      const tabs = document.getElementById('routesTabs');
+      (tabs.style.display === 'flex' || tabs.style.display === 'grid' ? tabs : document.getElementById('resultSection'))
+        .scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
   }
 
   // Aynı rota tekrar hesaplanırsa Google'a yeniden sormayız (kota tasarrufu)
@@ -1858,7 +1910,7 @@ function renderEv(j) {
       window._infoWindow.open(map, marker);
     };
     marker.addListener('click', open);
-    btn.onclick = () => { map.panTo({ lat: s.lat, lng: s.lng }); if (map.getZoom() < 11) map.setZoom(11); open(); };
+    btn.onclick = () => { map.panTo({ lat: s.lat, lng: s.lng }); if (map.getZoom() < 11) map.setZoom(11); open(); scrollToMap(); };
     _evMarkers.push(marker);
   });
   note.innerHTML = 'İstasyon verisi: <b>Open Charge Map</b> (topluluk kaynaklı; eksik veya güncel olmayan kayıtlar olabilir). Ücretler operatör tarifelerine göre tahminidir, konuma göre değişebilir — şarj öncesi operatörün uygulamasından teyit edin.';
@@ -1868,6 +1920,19 @@ function renderEv(j) {
 // KONUM ÖNERİLERİ — Places API (New) AutocompleteSuggestion
 // Eski google.maps.places.Autocomplete widget'ı yeni projelerde çalışmıyor
 // ═══════════════════════════════════════════════
+const isMobile = () => window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+function scrollToMap() {
+  if (!isMobile()) return;
+  const c = document.getElementById('map-container');
+  if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+document.getElementById('mapJump').addEventListener('click', scrollToMap);
+document.getElementById('mapBack').addEventListener('click', () => {
+  const t = document.getElementById('routesTabs');
+  const el = (t && t.style.display !== 'none') ? t : document.getElementById('resultSection');
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
 const _sel = { origin: null, destination: null }; // { text, placeId } veya { text, lat, lng }
 let _userBias = null;
 let _sessionToken = null;
