@@ -1,0 +1,5 @@
+{
+  "_not": "Bu dosya SADECE yedek. Canlı kaynaklar çalışmazsa bu değerler gösterilir. Elle güncellemek için: fiyatları ve updated tarihini değiştirip GitHub'a kaydedin.",
+  "updated": "2026-09-26",
+  "prices": { "benzin": 78.82, "motorin": 91.61, "lpg": 34.81 }
+}

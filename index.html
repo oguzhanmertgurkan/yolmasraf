@@ -561,6 +561,40 @@
       main { grid-template-columns: 1fr; }
       #map-container { min-height: 300px; }
     }
+
+    /* ── ELEKTRİKLİ / YAKIT NOTU ── */
+    .fuel-note { font-size: 0.7rem; color: var(--muted); line-height: 1.5; margin-top: 6px; }
+    .fuel-note b { color: var(--text); font-weight: 600; }
+    .fuel-note.warn { color: #fbbf77; }
+    .ev-presets { display: none; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .ev-presets.visible { display: flex; }
+    .ev-preset {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+      border-radius: 8px; padding: 6px 10px; font-size: 0.74rem; cursor: pointer; font-family: inherit;
+    }
+    .ev-preset:hover { border-color: var(--accent); color: var(--text); }
+    .ev-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .ev-chips { display: flex; gap: 6px; }
+    .ev-chip {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+      border-radius: 999px; padding: 4px 11px; font-size: 0.72rem; cursor: pointer; font-family: inherit;
+    }
+    .ev-chip.active { border-color: #34c47c; color: #34c47c; background: rgba(52,196,124,0.1); }
+    .ev-list { display: flex; flex-direction: column; gap: 6px; max-height: 340px; overflow-y: auto; }
+    .ev-item {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 12px; cursor: pointer; text-align: left; color: var(--text); font-family: inherit; width: 100%;
+    }
+    .ev-item:hover { border-color: #34c47c; }
+    .ev-top { display: flex; justify-content: space-between; gap: 8px; font-size: 0.84rem; font-weight: 600; }
+    .ev-km { color: var(--muted); font-weight: 500; font-size: 0.72rem; white-space: nowrap; }
+    .ev-sub { color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
+    .ev-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .ev-tag { font-size: 0.7rem; padding: 2px 7px; border-radius: 6px; font-weight: 600; }
+    .ev-tag.dc { background: rgba(52,196,124,0.15); color: #34c47c; }
+    .ev-tag.ac { background: rgba(96,165,250,0.15); color: #60a5fa; }
+    .ev-price { margin-top: 6px; font-size: 0.74rem; color: var(--accent2); }
+    .ev-status { font-size: 0.78rem; color: var(--muted); line-height: 1.5; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -574,11 +608,12 @@
 <!-- HEADER -->
 <header>
   <div class="logo">Yol<span>Masraf</span></div>
-  <div class="fuel-badge">
+  <div class="fuel-badge" id="fuelBadge">
     <div class="fuel-dot"></div>
     <div>
-      Benzin <strong id="fuelPriceDisplay">—</strong> ₺/L &nbsp;|&nbsp;
-      Motorin <strong id="dieselPriceDisplay">—</strong> ₺/L
+      Benzin <strong id="fuelPriceDisplay">—</strong> &nbsp;|&nbsp;
+      Motorin <strong id="dieselPriceDisplay">—</strong> &nbsp;|&nbsp;
+      LPG <strong id="lpgPriceDisplay">—</strong> ₺/L
     </div>
   </div>
 </header>
@@ -651,7 +686,7 @@
     <!-- FUEL TYPE -->
     <div>
       <div class="section-label">Yakıt Türü</div>
-      <div class="vehicle-grid">
+      <div class="vehicle-grid" style="grid-template-columns:repeat(4,1fr)">
         <button class="vehicle-btn active" data-fuel="benzin" onclick="selectFuel(this)">
           <span class="icon">⛽</span>
           <span class="label">Benzin</span>
@@ -664,6 +699,10 @@
           <span class="icon">🔵</span>
           <span class="label">LPG</span>
         </button>
+        <button class="vehicle-btn" data-fuel="elektrik" onclick="selectFuel(this)">
+          <span class="icon">⚡</span>
+          <span class="label">Elektrik</span>
+        </button>
       </div>
     </div>
 
@@ -673,18 +712,23 @@
 
       <div class="field">
         <div class="field-header">
-          <span class="field-name">Yakıt tüketimi</span>
-          <span class="field-val"><span id="consumptionVal">8</span> L/100km</span>
+          <span class="field-name" id="consLabel">Yakıt tüketimi</span>
+          <span class="field-val"><span id="consumptionVal">8</span> <span id="consUnit">L/100km</span></span>
         </div>
-        <input type="range" id="consumption" min="4" max="25" value="8" step="0.5"
+        <input type="range" id="consumption" min="3" max="35" value="8" step="0.5"
           oninput="document.getElementById('consumptionVal').textContent = this.value" />
       </div>
 
       <div class="field">
         <div class="field-header">
-          <span class="field-name">Yakıt fiyatı (₺/L)</span>
+          <span class="field-name" id="priceLabel">Yakıt fiyatı (₺/L)</span>
         </div>
         <input type="number" id="fuelPrice" step="0.01" placeholder="Otomatik yükleniyor…" />
+        <div class="ev-presets" id="evPresets">
+          <button type="button" class="ev-preset" onclick="setEvPrice('ac')" id="evPresetAc">AC ort.</button>
+          <button type="button" class="ev-preset" onclick="setEvPrice('dc')" id="evPresetDc">DC ort.</button>
+        </div>
+        <div class="fuel-note" id="fuelNote"></div>
       </div>
     </div>
 
@@ -740,9 +784,9 @@
       <div class="breakdown">
         <div class="breakdown-item">
           <div class="breakdown-left">
-            <span class="breakdown-icon">⛽</span>
+            <span class="breakdown-icon" id="fuelIcon">⛽</span>
             <div>
-              <div class="breakdown-name">Yakıt Masrafı</div>
+              <div class="breakdown-name" id="fuelName">Yakıt Masrafı</div>
               <div class="breakdown-detail" id="fuelDetail"></div>
             </div>
           </div>
@@ -765,12 +809,25 @@
         <div class="toll-list" id="tollList"></div>
       </div>
 
+      <div id="evWrap" style="display:none">
+        <div class="ev-head">
+          <div class="section-label" style="margin:0">⚡ Rota Üzerindeki Şarj İstasyonları</div>
+          <div class="ev-chips">
+            <button class="ev-chip active" id="evChipDc" onclick="setEvFilter(true)">Hızlı DC</button>
+            <button class="ev-chip" id="evChipAll" onclick="setEvFilter(false)">AC dahil</button>
+          </div>
+        </div>
+        <div id="evStatus" class="ev-status">Yükleniyor…</div>
+        <div class="ev-list" id="evList"></div>
+        <div class="fuel-note" id="evNote"></div>
+      </div>
+
       <div class="per-person" id="perPersonRow" style="display:none">
         <span class="per-person-label">👤 Kişi başı maliyet</span>
         <span class="per-person-val" id="perPersonVal">—</span>
       </div>
 
-      <div style="font-size:0.72rem;color:var(--muted);line-height:1.6;padding:0 4px;">
+      <div id="resultFootnote" style="font-size:0.72rem;color:var(--muted);line-height:1.6;padding:0 4px;">
         * Geçiş ücretleri KGM 2026 tarifesine göredir (1 Temmuz 2026 itibarıyla güncel). Yakıt maliyeti tahminidir; trafik ve sürüş stiline göre değişebilir. Otoyol parkur ücretleri giriş/çıkış noktasına göre değişebilir.
       </div>
     </div>
@@ -864,19 +921,46 @@ const TOLL_GATES = [
 ];
 
 // ═══════════════════════════════════════════════
-// AKARYAKIT FİYATLARI (EPDK verisi - otomatik güncellenir)
-// Manuel fallback: Haziran 2025 ortalaması
+// AKARYAKIT FİYATLARI — /api/fuel üzerinden her gün otomatik güncellenir
+// Sunucu fonksiyonu (api/fuel.js) 6 saatte bir kaynaklardan çeker; ulaşılamazsa aşağıdaki yedek değerler kullanılır.
 // ═══════════════════════════════════════════════
-const FUEL_FALLBACK = { benzin: 62.50, motorin: 64.50, lpg: 36.50 };
+const FUEL_FALLBACK = { benzin: 78.82, motorin: 91.61, lpg: 34.81 };
+const FUEL_FALLBACK_DATE = '2026-09-26';
 let fuelPrices = { ...FUEL_FALLBACK };
+let fuelMeta = { live: false, dates: { benzin: FUEL_FALLBACK_DATE, motorin: FUEL_FALLBACK_DATE, lpg: FUEL_FALLBACK_DATE }, fb: ['benzin', 'motorin', 'lpg'] };
+
+const TR_MONTHS = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+function fmtDateTR(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
+  return m ? `${parseInt(m[3], 10)} ${TR_MONTHS[parseInt(m[2], 10) - 1]} ${m[1]}` : '';
+}
 
 async function fetchFuelPrices() {
-  // EPDK resmi scraping backend olmadan doğrudan yapılamıyor.
-  // Gerçek uygulamada backend cron job çeker; şimdilik fallback kullanıyoruz.
-  // TODO: backend API endpoint eklendiğinde burası güncellenecek
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 8000);
+    const r = await fetch('/api/fuel', { signal: ctl.signal });
+    clearTimeout(t);
+    if (r.ok) {
+      const j = await r.json();
+      ['benzin', 'motorin', 'lpg'].forEach(k => {
+        const v = j.prices && j.prices[k];
+        if (typeof v === 'number' && v > 0) fuelPrices[k] = v;
+      });
+      fuelMeta = { live: (j.fallback || []).length < 3, dates: j.dates || {}, fb: j.fallback || [] };
+    }
+  } catch (e) { /* yedek değerler kalır */ }
+  renderFuelUi();
+}
+
+function renderFuelUi() {
   document.getElementById('fuelPriceDisplay').textContent = fuelPrices.benzin.toFixed(2);
   document.getElementById('dieselPriceDisplay').textContent = fuelPrices.motorin.toFixed(2);
-  document.getElementById('fuelPrice').value = fuelPrices.benzin.toFixed(2);
+  document.getElementById('lpgPriceDisplay').textContent = fuelPrices.lpg.toFixed(2);
+  const d = fuelMeta.dates || {};
+  const newest = Object.values(d).filter(Boolean).sort().pop();
+  document.getElementById('fuelBadge').title = 'Türkiye ortalaması' + (newest ? ' · son güncelleme ' + fmtDateTR(newest) : '');
+  configureFuelUi(false);
 }
 
 // ═══════════════════════════════════════════════
@@ -889,23 +973,68 @@ let directionsRenderer = null;
 let map = null;
 let originAC = null, destAC = null;
 
+const CONS_DEFAULTS = {
+  fuel: { car: 8,  suv: 11, minibus: 14, motorcycle: 5, truck: 22, bus: 28 },
+  ev:   { car: 18, suv: 22, minibus: 28, motorcycle: 8, truck: 110, bus: 100 },
+};
+const EV_AVG = { ac: 9.87, dc: 13.62 };          // ₺/kWh — 25 operatörün ortalaması, 17 Eylül 2026
+const EV_TARIFF_DATE = '17 Eylül 2026';
+
+function setDefaultConsumption() {
+  const ev = selectedFuel === 'elektrik';
+  const c = document.getElementById('consumption');
+  c.min = ev ? 8 : 3; c.max = ev ? 150 : 35;
+  c.value = (ev ? CONS_DEFAULTS.ev : CONS_DEFAULTS.fuel)[selectedVehicle] || (ev ? 18 : 8);
+  document.getElementById('consumptionVal').textContent = c.value;
+}
+
 function selectVehicle(btn) {
   document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   selectedVehicle = btn.dataset.type;
+  setDefaultConsumption();
+}
 
-  // Tüketim varsayılanını ayarla
-  const defaults = { car:8, suv:11, minibus:14, motorcycle:5, truck:22, bus:28 };
-  const c = document.getElementById('consumption');
-  c.value = defaults[selectedVehicle] || 8;
-  document.getElementById('consumptionVal').textContent = c.value;
+// Yakıt türüne göre birim, etiket, varsayılan fiyat ve notları ayarlar
+function configureFuelUi(resetConsumption) {
+  const ev = selectedFuel === 'elektrik';
+  document.getElementById('consLabel').textContent = ev ? 'Enerji tüketimi' : 'Yakıt tüketimi';
+  document.getElementById('consUnit').textContent = ev ? 'kWh/100km' : 'L/100km';
+  document.getElementById('priceLabel').textContent = ev ? 'Şarj fiyatı (₺/kWh)' : 'Yakıt fiyatı (₺/L)';
+  const nm = document.getElementById('fuelName'); if (nm) nm.textContent = ev ? 'Şarj Masrafı' : 'Yakıt Masrafı';
+  const ico = document.getElementById('fuelIcon'); if (ico) ico.textContent = ev ? '⚡' : '⛽';
+  document.getElementById('evPresets').classList.toggle('visible', ev);
+  document.getElementById('evPresetAc').textContent = `AC ort. ${EV_AVG.ac.toFixed(2)} ₺`;
+  document.getElementById('evPresetDc').textContent = `Hızlı DC ort. ${EV_AVG.dc.toFixed(2)} ₺`;
+  if (resetConsumption) setDefaultConsumption();
+  const note = document.getElementById('fuelNote');
+  if (ev) {
+    document.getElementById('fuelPrice').value = EV_AVG.dc.toFixed(2);
+    note.className = 'fuel-note';
+    note.innerHTML = `Ortalama tarifeler <b>${EV_TARIFF_DATE}</b> itibarıyla. Yolda hızlı DC şarj varsayıldı; evde/AC şarj için yukarıdan seçin. Operatöre özel ücretleri aşağıda istasyon listesinde görürsünüz.`;
+  } else {
+    document.getElementById('fuelPrice').value = fuelPrices[selectedFuel].toFixed(2);
+    const dt = fmtDateTR((fuelMeta.dates || {})[selectedFuel]);
+    if (fuelMeta.live && !(fuelMeta.fb || []).includes(selectedFuel)) {
+      note.className = 'fuel-note';
+      note.innerHTML = `Güncel pompa fiyatı (Türkiye ort.)${dt ? ' · <b>' + dt + '</b>' : ''}. İlinize göre birkaç TL değişebilir; isterseniz düzeltin.`;
+    } else {
+      note.className = 'fuel-note warn';
+      note.innerHTML = `Canlı fiyat alınamadı; son bilinen değer${dt ? ' (' + dt + ')' : ''} gösteriliyor. Lütfen kontrol edin.`;
+    }
+  }
 }
 
 function selectFuel(btn) {
   document.querySelectorAll('[data-fuel]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  const wasEv = selectedFuel === 'elektrik';
   selectedFuel = btn.dataset.fuel;
-  document.getElementById('fuelPrice').value = fuelPrices[selectedFuel].toFixed(2);
+  configureFuelUi(wasEv !== (selectedFuel === 'elektrik'));
+}
+
+function setEvPrice(kind) {
+  document.getElementById('fuelPrice').value = EV_AVG[kind].toFixed(2);
 }
 
 function changePass(delta) {
@@ -1027,7 +1156,9 @@ function calculate() {
       `${r.leg.start_address.split(',')[0]} → ${r.leg.end_address.split(',')[0]}`;
     document.getElementById('fuelCost').textContent = formatTL(r.fuelCost);
     document.getElementById('fuelDetail').textContent =
-      `${r.distanceKm.toFixed(0)} km × ${consumption_val} L/100km × ${fuelPrice.toFixed(2)} ₺/L`;
+      selectedFuel === 'elektrik'
+        ? `${r.distanceKm.toFixed(0)} km × ${consumption_val} kWh/100km × ${fuelPrice.toFixed(2)} ₺/kWh`
+        : `${r.distanceKm.toFixed(0)} km × ${consumption_val} L/100km × ${fuelPrice.toFixed(2)} ₺/L`;
     document.getElementById('tollCost').textContent = formatTL(r.tollTotal);
     document.getElementById('tollDetail').textContent =
       r.tolls.length > 0 ? `${r.tolls.length} geçiş noktası tespit edildi` : 'Ücretli geçiş yok';
@@ -1272,6 +1403,13 @@ function calculate() {
       });
       window._tollMarkers.push(marker);
     });
+
+    updateEvPanel(r);
+    const foot = document.getElementById('resultFootnote');
+    foot.dataset.base = foot.dataset.base || foot.innerHTML;
+    foot.innerHTML = selectedFuel === 'elektrik'
+      ? foot.dataset.base + ' Şarj maliyeti; seçilen fiyat ve enerji tüketimine göre tahmindir (batarya sıcaklığı, hız ve şarj eğrisi sonucu etkiler).'
+      : foot.dataset.base;
   }
 
   // ── DIRECTIONS API — 4 PARALEL İSTEK ──
@@ -1447,6 +1585,167 @@ function calculate() {
       if (doneCount === REQUESTS.length) onAllDone();
     });
   });
+}
+
+// ═══════════════════════════════════════════════
+// ELEKTRİKLİ ARAÇ — Rota üzerindeki şarj istasyonları
+// İstasyon verisi: /api/ev (Open Charge Map). Ücretler: operatör tarifeleri (aşağıda, elle güncellenir)
+// ═══════════════════════════════════════════════
+// Kaynaklar: trugo.com.tr/price (resmi); araclo.com (ZES, Eşarj, Sharz, Elaris — 17 Eyl 2026);
+// old:true olanlar Şubat–Nisan 2026 tarihli, teyit edilmemiş değerlerdir.
+const EV_TARIFFS = [
+  { re: /\b(trugo|togg)\b/,            name: 'Trugo',          ac: [9.95, 9.95],  dc: [14.98, 14.98] },
+  { re: /\bzes\b/,                     name: 'ZES',            ac: [10.99, 10.99], dc: [12.99, 16.49] },
+  { re: /\b(esarj|e-sarj)\b/,          name: 'Eşarj',          ac: [9.90, 9.90],  dc: [9.90, 14.90] },
+  { re: /\bsharz\b/,                   name: 'Sharz',          ac: [9.49, 9.49],  dc: [11.99, 11.99] },
+  { re: /\belaris\b/,                  name: 'Elaris',         ac: [8.49, 9.49],  dc: [10.00, 10.00] },
+  { re: /\bshell\b/,                   name: 'Shell Recharge', ac: [11.99, 11.99], dc: [12.99, 15.99], old: true },
+  { re: /\b(e-power|epower)\b/,        name: 'E-Power',        ac: [8.49, 8.99],  dc: [10.99, 11.99], old: true },
+  { re: /\bvoltrun\b/,                 name: 'Voltrun',        ac: [9.90, 10.90], dc: [12.90, 13.90], old: true },
+  { re: /\btesla\b/,                   name: 'Tesla',          ac: null,          dc: [9.40, 13.00],  old: true, note: 'Tesla sahiplerine daha düşük' },
+];
+function normTR(s) {
+  return String(s || '').toLocaleLowerCase('tr').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c')
+    .replace(/ğ/g, 'g').replace(/ö/g, 'o').replace(/ü/g, 'u');
+}
+function tariffFor(st) {
+  const hay = normTR(st.operator + ' ' + st.title);
+  return EV_TARIFFS.find(t => t.re.test(hay)) || null;
+}
+const fmtRange = (r) => r[0] === r[1] ? r[0].toFixed(2) : `${r[0].toFixed(2)}–${r[1].toFixed(2)}`;
+function priceHtml(st) {
+  const t = tariffFor(st);
+  if (!t) return `Ort. tarife: AC ${EV_AVG.ac.toFixed(2)} · DC ${EV_AVG.dc.toFixed(2)} ₺/kWh <span style="opacity:.7">(operatör tarifesi bilinmiyor)</span>`;
+  const parts = [];
+  if (st.conns.some(c => c.cur === 'AC') && t.ac) parts.push(`AC ${fmtRange(t.ac)}`);
+  if (st.conns.some(c => c.cur === 'DC') && t.dc) parts.push(`DC ${fmtRange(t.dc)}`);
+  if (!parts.length) parts.push([t.ac && 'AC ' + fmtRange(t.ac), t.dc && 'DC ' + fmtRange(t.dc)].filter(Boolean).join(' · '));
+  return `${escHtml(t.name)}: <b>${parts.join(' · ')} ₺/kWh</b>${t.note ? ' · ' + escHtml(t.note) : ''}${t.old ? ' <span style="opacity:.7">(Nisan 2026 verisi, teyit edin)</span>' : ''}`;
+}
+
+let evFilterDc = true;
+let _evMarkers = [];
+let _evReq = 0;
+let _evRoute = null;
+
+function setEvFilter(dc) {
+  evFilterDc = dc;
+  document.getElementById('evChipDc').classList.toggle('active', dc);
+  document.getElementById('evChipAll').classList.toggle('active', !dc);
+  if (_evRoute) updateEvPanel(_evRoute);
+}
+
+function clearEvMarkers() {
+  _evMarkers.forEach(m => m.setMap(null));
+  _evMarkers = [];
+}
+
+// Rota çizgisini ~stepKm aralıkla örnekle (uzun düz parçalara ara nokta ekler)
+function samplePath(path, stepKm) {
+  const pts = path.map(p => [p.lat(), p.lng()]);
+  const out = [pts[0]];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i];
+    const d = haversineKm(a[0], a[1], b[0], b[1]);
+    const n = Math.max(1, Math.ceil(d / stepKm));
+    for (let k = 1; k <= n; k++) out.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]);
+  }
+  return out;
+}
+
+function updateEvPanel(r) {
+  const wrap = document.getElementById('evWrap');
+  const foot = document.getElementById('resultFootnote');
+  clearEvMarkers();
+  _evReq++;
+  if (selectedFuel !== 'elektrik') {
+    wrap.style.display = 'none';
+    _evRoute = null;
+    return;
+  }
+  wrap.style.display = 'block';
+  _evRoute = r;
+  const key = evFilterDc ? 'dc' : 'all';
+  r.ev = r.ev || {};
+  if (r.ev[key]) return renderEv(r.ev[key]);
+  const st = document.getElementById('evStatus');
+  st.style.display = 'block'; st.textContent = 'Şarj istasyonları aranıyor…';
+  document.getElementById('evList').innerHTML = '';
+  const token = _evReq;
+  const points = samplePath(r.route.overview_path || [], 4);
+  fetch('/api/ev', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ points, dcOnly: evFilterDc }) })
+    .then(res => res.json())
+    .then(j => { if (token !== _evReq) return; if (j && j.ok) r.ev[key] = j; renderEv(j); })
+    .catch(() => { if (token === _evReq) renderEv({ ok: false, error: 'network' }); });
+}
+
+function evTagsHtml(st) {
+  return st.conns.map(c => `<span class="ev-tag ${c.cur === 'DC' ? 'dc' : 'ac'}">${c.cur} ${c.kw ? c.kw + ' kW' : ''} · ${escHtml(c.t)}${c.n > 1 ? ' ×' + c.n : ''}</span>`).join('');
+}
+
+function renderEv(j) {
+  const st = document.getElementById('evStatus');
+  const list = document.getElementById('evList');
+  const note = document.getElementById('evNote');
+  list.innerHTML = '';
+  note.innerHTML = '';
+  clearEvMarkers();
+  if (!j || !j.ok) {
+    if (j && j.error === 'no_key') console.warn('YolMasraf: Vercel ortam değişkeni OCM_API_KEY tanımlı değil.');
+    st.style.display = 'block';
+    st.textContent = 'Şarj istasyonu verisi şu an alınamadı. Birkaç dakika sonra tekrar deneyin.';
+    return;
+  }
+  const stations = j.stations || [];
+  if (!stations.length) {
+    st.style.display = 'block';
+    st.textContent = evFilterDc
+      ? 'Bu rota boyunca kayıtlı hızlı DC şarj istasyonu bulunamadı. "AC dahil" seçeneğini deneyin.'
+      : 'Bu rota boyunca kayıtlı şarj istasyonu bulunamadı.';
+    return;
+  }
+  const dcCount = stations.filter(s => s.dc).length;
+  st.style.display = 'block';
+  st.innerHTML = `Yolun en fazla 3 km yakınında <b>${stations.length}</b> istasyon${evFilterDc ? '' : ` (${dcCount} tanesi hızlı DC)`}${j.partial ? ' · <span style="color:#fbbf77">bazı bölgeler yüklenemedi</span>' : ''}. Listeden birine tıklayınca haritada görürsünüz.`;
+
+  window._infoWindow = window._infoWindow || new google.maps.InfoWindow();
+  const shown = stations.slice(0, 250);
+  shown.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'ev-item';
+    btn.innerHTML = `
+      <div class="ev-top"><span>${escHtml(s.operator || s.title || 'Şarj istasyonu')}</span><span class="ev-km">${s.routeKm}. km</span></div>
+      <div class="ev-sub">${escHtml(s.title && s.operator && s.title !== s.operator ? s.title + ' · ' : '')}${escHtml(s.addr)}</div>
+      <div class="ev-tags">${evTagsHtml(s)}</div>
+      <div class="ev-price">${priceHtml(s)}</div>`;
+    list.appendChild(btn);
+
+    const marker = new google.maps.Marker({
+      position: { lat: s.lat, lng: s.lng }, map,
+      title: s.title || s.operator,
+      label: { text: '⚡', fontSize: '13px' },
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 13, fillColor: s.dc ? '#34c47c' : '#60a5fa', fillOpacity: 1, strokeColor: '#0f1117', strokeWeight: 2 },
+      zIndex: 8,
+    });
+    const open = () => {
+      window._infoWindow.setContent(`
+        <div style="font-family:Inter,sans-serif;padding:4px 2px;min-width:230px;max-width:290px;color:#333">
+          <div style="font-weight:700;font-size:0.92rem;margin-bottom:2px">⚡ ${escHtml(s.operator || s.title || 'Şarj istasyonu')}</div>
+          <div style="font-size:0.76rem;color:#777;margin-bottom:6px">${escHtml(s.title && s.title !== s.operator ? s.title + ' · ' : '')}${escHtml(s.addr)}</div>
+          <table style="width:100%;border-collapse:collapse;font-size:0.8rem">
+            ${s.conns.map(c => `<tr><td style="padding:2px 0"><b style="color:${c.cur === 'DC' ? '#1a9d5c' : '#2b7fd6'}">${c.cur}</b> ${c.kw ? c.kw + ' kW' : ''}</td><td>${escHtml(c.t)}</td><td style="text-align:right">×${c.n}</td></tr>`).join('')}
+          </table>
+          <div style="margin-top:6px;padding:5px 8px;background:#f2fbf6;border-radius:6px;font-size:0.76rem;line-height:1.45">${priceHtml(s).replace(/color:[^;"]*/g, '')}</div>
+          ${s.usage ? `<div style="margin-top:5px;font-size:0.72rem;color:#888">Kayıtlı bilgi: ${escHtml(s.usage)}</div>` : ''}
+          <div style="margin-top:5px;font-size:0.72rem;color:#888">Rotanın ${s.routeKm}. km'si, yola ${s.offKm} km</div>
+        </div>`);
+      window._infoWindow.open(map, marker);
+    };
+    marker.addListener('click', open);
+    btn.onclick = () => { map.panTo({ lat: s.lat, lng: s.lng }); if (map.getZoom() < 11) map.setZoom(11); open(); };
+    _evMarkers.push(marker);
+  });
+  note.innerHTML = 'İstasyon verisi: <b>Open Charge Map</b> (topluluk kaynaklı; eksik veya güncel olmayan kayıtlar olabilir). Ücretler operatör tarifelerine göre tahminidir, konuma göre değişebilir — şarj öncesi operatörün uygulamasından teyit edin.';
 }
 
 // ═══════════════════════════════════════════════
