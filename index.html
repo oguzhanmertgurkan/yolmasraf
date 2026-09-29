@@ -2,34 +2,50 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport"="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#131a21" />
   <title>YolMasraf — Türkiye Yol Masrafı Hesaplayıcı</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #0f1117;
-      --surface:   #181c27;
-      --surface2:  #1e2333;
-      --border:    #2a2f42;
-      --accent:    #e8a020;
-      --accent2:   #f5c842;
-      --text:      #eef0f6;
-      --muted:     #8892a4;
-      --success:   #34c47c;
-      --red:       #e85555;
-      --radius:    14px;
-      --font-head: 'Space Grotesk', sans-serif;
-      --font-body: 'Inter', sans-serif;
+      --bg:        #131a21;
+      --surface:   #1a232c;
+      --surface2:  #212c37;
+      --border:    #2f3c49;
+      --accent:    #dcb87a;
+      --accent2:   #ecd3a2;
+      --text:      #e7ebef;
+      --muted:     #93a1af;
+      --success:   #78cdb0;
+      --red:       #e59a9a;
+      --blue:      #86b3e6;
+      --violet:    #b4a4e6;
+      --radius:    18px;
+      --font-head: 'Figtree', system-ui, sans-serif;
+      --font-body: 'Figtree', system-ui, sans-serif;
+      color-scheme: dark;
     }
+
+    * { scrollbar-width: thin; scrollbar-color: #3b4957 transparent; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #3b4957; border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+    ::-webkit-scrollbar-thumb:hover { background: #55677a; background-clip: content-box; }
+
+    .i { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; vertical-align: -0.2em; }
+    .vehicle-btn .icon { display: flex; }
+    .vehicle-btn .icon .i { width: 28px; height: 28px; stroke-width: 1.5; }
 
     body {
       background: var(--bg);
       color: var(--text);
       font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      font-variant-numeric: tabular-nums;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -40,16 +56,19 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 32px;
+      padding: 16px 28px;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
     }
     .logo {
       font-family: var(--font-head);
       font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      display: flex; align-items: center; gap: 10px;
     }
+    .logo-mark { width: 34px; height: 34px; border-radius: 11px; background: rgba(220,184,122,0.14); color: var(--accent); display: flex; align-items: center; justify-content: center; }
+    .logo-mark .i { width: 20px; height: 20px; }
     .logo span { color: var(--accent); }
     .fuel-badge {
       display: flex;
@@ -57,8 +76,8 @@
       gap: 8px;
       background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 14px;
+      border-radius: 999px;
+      padding: 7px 16px;
       font-size: 0.78rem;
       color: var(--muted);
     }
@@ -134,24 +153,23 @@
       width: 100%;
       background: var(--surface2);
       border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 11px 14px;
+      border-radius: 12px;
+      padding: 12px 14px;
       color: var(--text);
       font-family: var(--font-body);
       font-size: 0.9rem;
       outline: none;
       transition: border-color 0.2s;
     }
-    .pac-input:focus { border-color: var(--accent); }
+    .pac-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(220,184,122,0.14); }
     .pac-input::placeholder { color: var(--muted); }
 
     /* vehicle */
     .section-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      opacity: 0.85;
       margin-bottom: 10px;
     }
     .vehicle-grid {
@@ -162,8 +180,8 @@
     .vehicle-btn {
       background: var(--surface2);
       border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 6px;
+      border-radius: 14px;
+      padding: 13px 6px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
@@ -175,11 +193,10 @@
     .vehicle-btn:hover { border-color: var(--accent); color: var(--text); }
     .vehicle-btn.active {
       border-color: var(--accent);
-      background: rgba(232,160,32,0.1);
+      background: rgba(220,184,122,0.1);
       color: var(--accent);
     }
-    .vehicle-btn .icon { font-size: 1.4rem; }
-    .vehicle-btn .label { font-size: 0.72rem; font-weight: 500; }
+    .vehicle-btn .label { font-size: 0.76rem; font-weight: 600; }
 
     /* sliders */
     .field-group { display: flex; flex-direction: column; gap: 14px; }
@@ -218,14 +235,14 @@
       width: 100%;
       background: var(--surface2);
       border: 1.5px solid var(--border);
-      border-radius: 8px;
-      padding: 9px 12px;
+      border-radius: 12px;
+      padding: 11px 14px;
       color: var(--text);
       font-family: var(--font-body);
       font-size: 0.88rem;
       outline: none;
     }
-    input[type=number]:focus { border-color: var(--accent); }
+    input[type=number]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(220,184,122,0.14); }
 
     /* passengers */
     .pass-row {
@@ -252,9 +269,9 @@
       width: 100%;
       padding: 15px;
       background: var(--accent);
-      color: #0f1117;
+      color: #131a21;
       border: none;
-      border-radius: 12px;
+      border-radius: 14px;
       font-family: var(--font-head);
       font-size: 1rem;
       font-weight: 700;
@@ -283,17 +300,17 @@
     }
 
     .result-hero {
-      background: linear-gradient(135deg, rgba(232,160,32,0.15), rgba(232,160,32,0.04));
-      border: 1px solid rgba(232,160,32,0.3);
+      background: linear-gradient(160deg, rgba(220,184,122,0.12), rgba(220,184,122,0.03));
+      border: 1px solid rgba(220,184,122,0.22);
       border-radius: var(--radius);
       padding: 20px;
       text-align: center;
     }
-    .result-hero .total-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .result-hero .total-label { font-size: 0.82rem; color: var(--muted); }
     .result-hero .total-amount {
       font-family: var(--font-head);
-      font-size: 2.6rem;
-      font-weight: 700;
+      font-size: 2.5rem;
+      font-weight: 800;
       color: var(--accent);
       line-height: 1.1;
       margin: 6px 0 2px;
@@ -315,10 +332,22 @@
       padding: 13px 16px;
     }
     .breakdown-left { display: flex; align-items: center; gap: 10px; }
-    .breakdown-icon { font-size: 1.1rem; }
+    .breakdown-icon { display: flex; width: 34px; height: 34px; border-radius: 11px; background: rgba(220,184,122,0.10); color: var(--accent); align-items: center; justify-content: center; }
+    .breakdown-icon .i { width: 19px; height: 19px; }
+    .ic-label { display: flex; align-items: center; gap: 6px; }
+    .ic-label .i { color: var(--accent); }
+    .toll-name { display: flex; align-items: center; gap: 8px; }
+    .toll-name .i { color: var(--accent); }
+    .route-badge { display: inline-flex !important; align-items: center; gap: 4px; }
+    .route-badge .i { width: 0.95em; height: 0.95em; }
+    .ac-pin { display: flex; color: var(--muted); }
+    .map-placeholder .mp-icon .i { width: 56px; height: 56px; stroke-width: 1.2; }
+    .input-icon .i { width: 16px; height: 16px; }
     .breakdown-name { font-size: 0.85rem; color: var(--muted); }
     .breakdown-detail { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
     .breakdown-price {
+      white-space: nowrap;
+      margin-left: 12px;
       font-weight: 700;
       font-size: 1rem;
       color: var(--text);
@@ -367,7 +396,7 @@
       font-size: 0.82rem;
     }
     .toll-item .toll-name { color: var(--muted); }
-    .toll-item .toll-price { font-weight: 600; color: var(--text); }
+    .toll-item .toll-price { font-weight: 600; color: var(--text); white-space: nowrap; margin-left: 12px; }
 
     /* ── MAP ── */
     #map {
@@ -386,7 +415,7 @@
       color: var(--muted);
       background: var(--surface2);
     }
-    .map-placeholder .mp-icon { font-size: 3rem; opacity: 0.3; }
+    .map-placeholder .mp-icon { opacity: 0.35; }
     .map-placeholder p { font-size: 0.9rem; }
 
     /* loading */
@@ -394,7 +423,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(15,17,23,0.7);
+      background: rgba(19,26,33,0.7);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -415,7 +444,7 @@
     /* error */
     .error-box {
       display: none;
-      background: rgba(232,85,85,0.12);
+      background: rgba(229,154,154,0.12);
       border: 1px solid var(--red);
       border-radius: 10px;
       padding: 12px 16px;
@@ -425,9 +454,6 @@
     .error-box.visible { display: block; }
 
     /* scrollbar */
-    .panel::-webkit-scrollbar { width: 4px; }
-    .panel::-webkit-scrollbar-track { background: transparent; }
-    .panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
     /* Google autocomplete styling */
     .pac-container {
@@ -467,7 +493,7 @@
     .ac-main b { color: var(--accent); font-weight: 600; }
     .ac-sub { color: var(--muted); font-size: 0.74rem; margin-top: 1px; }
     .ac-msg { padding: 12px 14px; font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
-    .route-hint { display: none; margin-top: 8px; font-size: 0.78rem; line-height: 1.5; color: #fca5a5; }
+    .route-hint { display: none; margin-top: 8px; font-size: 0.78rem; line-height: 1.5; color: #e59a9a; }
     .route-hint.visible { display: block; }
 
     .location-btn {
@@ -498,7 +524,7 @@
     .route-tab {
       flex: 1;
       padding: 10px 6px;
-      border-radius: 10px;
+      border-radius: 14px;
       border: 1.5px solid var(--border);
       background: var(--surface2);
       color: var(--muted);
@@ -512,31 +538,30 @@
     .route-tab:hover { border-color: var(--accent); color: var(--text); }
     .route-tab.active {
       border-color: var(--accent);
-      background: rgba(232,160,32,0.12);
+      background: rgba(220,184,122,0.12);
       color: var(--accent);
     }
     .route-tab.cheapest { border-color: var(--success); }
     .route-tab.cheapest.active {
       border-color: var(--success);
-      background: rgba(52,196,124,0.18);
+      background: rgba(120,205,176,0.18);
       color: var(--success);
     }
     .route-badge {
       display: inline-block;
-      font-size: 0.65rem;
-      padding: 1px 6px;
-      border-radius: 4px;
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 999px;
       margin-bottom: 3px;
       font-weight: 700;
-      letter-spacing: 0.04em;
     }
-    .badge-fast  { background: rgba(232,160,32,0.2);  color: var(--accent); }
-    .badge-cheap { background: rgba(52,196,124,0.2);  color: var(--success); }
-    .badge-ferry { background: rgba(96,165,250,0.2);  color: #60a5fa; }
-    .badge-free  { background: rgba(167,139,250,0.2); color: #a78bfa; }
-    .badge-alt   { background: rgba(136,146,164,0.2); color: var(--muted); }
-    .route-tab.ferry-tab { border-color: #60a5fa; }
-    .route-tab.ferry-tab.active { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .badge-fast  { background: rgba(220,184,122,0.2);  color: var(--accent); }
+    .badge-cheap { background: rgba(120,205,176,0.2);  color: var(--success); }
+    .badge-ferry { background: rgba(134,179,230,0.2);  color: #86b3e6; }
+    .badge-free  { background: rgba(180,164,230,0.2); color: #b4a4e6; }
+    .badge-alt   { background: rgba(147,161,175,0.2); color: var(--muted); }
+    .route-tab.ferry-tab { border-color: #86b3e6; }
+    .route-tab.ferry-tab.active { background: rgba(134,179,230,0.12); color: #86b3e6; }
     .route-tab-km    { font-size: 0.72rem; color: var(--muted); margin-top: 2px; font-weight: 400; }
     .route-tab-price { font-size: 0.92rem; font-weight: 700; margin-top: 2px; }
 
@@ -553,7 +578,7 @@
       display: flex; align-items: center; justify-content: center;
       transition: border-color 0.15s, background 0.15s;
     }
-    .location-btn:hover { border-color: var(--accent); background: rgba(232,160,32,0.1); }
+    .location-btn:hover { border-color: var(--accent); background: rgba(220,184,122,0.1); }
     .location-btn.loading { animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
@@ -579,25 +604,52 @@
       background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
       border-radius: 999px; padding: 4px 11px; font-size: 0.72rem; cursor: pointer; font-family: inherit;
     }
-    .ev-chip.active { border-color: #34c47c; color: #34c47c; background: rgba(52,196,124,0.1); }
-    .ev-list { display: flex; flex-direction: column; gap: 6px; max-height: 340px; overflow-y: auto; }
+    .ev-chip.active { border-color: #78cdb0; color: #78cdb0; background: rgba(120,205,176,0.1); }
+    .ev-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
     .ev-item {
-      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
-      padding: 10px 12px; cursor: pointer; text-align: left; color: var(--text); font-family: inherit; width: 100%;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+      padding: 11px 13px; cursor: pointer; text-align: left; color: var(--text); font-family: inherit; width: 100%;
     }
-    .ev-item:hover { border-color: #34c47c; }
+    .ev-item:hover { border-color: #78cdb0; }
     .ev-top { display: flex; justify-content: space-between; gap: 8px; font-size: 0.84rem; font-weight: 600; }
     .ev-km { color: var(--muted); font-weight: 500; font-size: 0.72rem; white-space: nowrap; }
     .ev-sub { color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
     .ev-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
     .ev-tag { font-size: 0.7rem; padding: 2px 7px; border-radius: 6px; font-weight: 600; }
-    .ev-tag.dc { background: rgba(52,196,124,0.15); color: #34c47c; }
-    .ev-tag.ac { background: rgba(96,165,250,0.15); color: #60a5fa; }
+    .ev-tag.dc { background: rgba(120,205,176,0.15); color: #78cdb0; }
+    .ev-tag.ac { background: rgba(134,179,230,0.15); color: #86b3e6; }
     .ev-price { margin-top: 6px; font-size: 0.74rem; color: var(--accent2); }
     .ev-status { font-size: 0.78rem; color: var(--muted); line-height: 1.5; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; }
   </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M3.5 16.5v-3a1.5 1.5 0 0 1 1.2-1.5L7 11.5l2.1-3.6A2 2 0 0 1 10.800 7h3.400a2 2 0 0 1 1.600.8l2.300 3.300 1.600.4A1.500 1.500 0 0 1 21 13.100v3.400"/><path d="M3.500 16.500h2M9.500 16.500h5M18.500 16.500H21"/><circle cx="7.500" cy="16.500" r="2"/><circle cx="16.500" cy="16.500" r="2"/><path d="M10.200 11.500 11.400 9h2.900l1.700 2.500z"/></symbol>
+  <symbol id="i-suv" viewBox="0 0 24 24"><path d="M3.500 16.500v-5.200a1.500 1.500 0 0 1 1.500-1.500h.7L7.400 7.500A1.500 1.500 0 0 1 8.600 7H16a1.500 1.500 0 0 1 1.200.6L19.700 10H20a1.500 1.500 0 0 1 1.500 1.500v5"/><path d="M3.500 16.500h2M9.500 16.500h5M18.500 16.500h3"/><circle cx="7.500" cy="16.500" r="2"/><circle cx="16.500" cy="16.500" r="2"/><path d="M8 10h9M12.500 7.200V10"/></symbol>
+  <symbol id="i-minibus" viewBox="0 0 24 24"><path d="M2.500 16.500V8.200A1.700 1.700 0 0 1 4.200 6.500h10.800a2 2 0 0 1 1.600.8l3.400 4.400a1.500 1.500 0 0 1 .3.900v3.900"/><path d="M2.500 16.500h2.500M10 16.500h4.500M19 16.500h1.800M2.500 11h14.500M8 6.500V11M13 6.500V11"/><circle cx="7.500" cy="16.500" r="2"/><circle cx="16.800" cy="16.500" r="2"/></symbol>
+  <symbol id="i-motorcycle" viewBox="0 0 24 24"><circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l3.2-6h4.3l2.5 6M9.2 10 8 7.7H6M13.5 10l1.7-3h2.3M11 16l2.5-6"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2.5 6.8h10.2v9.7H2.5zM12.7 9.8h4.3l3.5 3.4v3.3h-7.8"/><circle cx="7" cy="17.6" r="1.6"/><circle cx="16.8" cy="17.6" r="1.6"/></symbol>
+  <symbol id="i-bus" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="13" rx="2.2"/><path d="M4 11h16M7.5 17v2.2M16.5 17v2.2"/><circle cx="8" cy="14" r=".5"/><circle cx="16" cy="14" r=".5"/></symbol>
+  <symbol id="i-pump" viewBox="0 0 24 24"><path d="M5 20.5V6a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v14.5M4 20.5h11M5 10h9M14 8.5h2a1.6 1.6 0 0 1 1.6 1.6V15a1.7 1.7 0 0 0 3.4 0V9.2l-2.6-2.6"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5c3.2 3.8 5.4 6.4 5.4 9.4a5.4 5.4 0 0 1-10.8 0c0-3 2.2-5.6 5.4-9.4z"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c.4 3.2-3.6 5-3.6 9.2a3.7 3.7 0 0 0 7.2 1.2c.6-2-.4-3.4-1.4-4.4-.2 1.3-.8 2-1.6 2.2.6-2.8-.2-5.4-.6-8.2z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.2 3 5.8 13.2h5.3L10.3 21l7.9-10.6h-5.4z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s6.5-5.7 6.5-11.1a6.5 6.5 0 0 0-13 0C5.5 15.300 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.3"/></symbol>
+  <symbol id="i-origin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-locate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-road" viewBox="0 0 24 24"><path d="M8.5 3 5 21M15.5 3 19 21M12 4.5v3M12 10.5v3M12 16.5v3"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18h6.3a3 3 0 0 0 0-6h-5a3 3 0 0 1 0-6h6.3"/></symbol>
+  <symbol id="i-ferry" viewBox="0 0 24 24"><path d="M4 14.5l1.4 4h13.2l1.4-4zM6.5 14.5V10h11v4.5M9.5 10V6.5h5V10M12 6.5V4"/><path d="M3 21c1.5 0 1.5-.8 3-.8s1.5.8 3 .8 1.500-.8 3-.8 1.500.8 3 .8 1.500-.8 3-.8 1.500.8 3 .8" /></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.2" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4.5 3.5 6.5v13L9 17.500l6 2 5.500-2v-13L15 6.500z"/><path d="M9 4.500v13M15 6.500v13"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19.500C5 11 10 5.500 19.500 4.500c0 9.500-5.200 14.500-13.500 14.500M5 19.500l7-7"/></symbol>
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M14.800 9.400c-.6-.9-1.700-1.400-2.800-1.400-1.500 0-2.600.9-2.600 2.100 0 2.800 5.300 1.300 5.300 4.100 0 1.200-1.200 2.100-2.800 2.100-1.200 0-2.300-.5-2.900-1.400M12 6.300v1.700M12 16.200v1.700"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 3l8 4v10l-8 4-8-4V7zM4 7l8 4 8-4M12 11v10"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2.500"/><path d="M8.500 7.500h7M8.500 12h.01M12 12h.01M15.500 12h.01M8.500 16h.01M12 16h.01M15.500 16h.01"/></symbol>
+</svg>
+
 
 <!-- LOADING -->
 <div class="loading-overlay" id="loadingOverlay">
@@ -607,7 +659,7 @@
 
 <!-- HEADER -->
 <header>
-  <div class="logo">Yol<span>Masraf</span></div>
+  <div class="logo"><span class="logo-mark"><svg class="i" aria-hidden="true"><use href="#i-route"/></svg></span><div>Yol<span>Masraf</span></div></div>
   <div class="fuel-badge" id="fuelBadge">
     <div class="fuel-dot"></div>
     <div>
@@ -634,15 +686,15 @@
       <div class="route-wrap">
         <div class="route-line"></div>
         <div class="input-row">
-          <div class="input-icon start">⬤</div>
+          <div class="input-icon start"><svg class="i" aria-hidden="true"><use href="#i-origin"/></svg></div>
           <div class="ac-wrap">
             <input id="origin" class="pac-input" type="text" placeholder="Nereden? (şehir veya adres)" autocomplete="off" spellcheck="false" />
             <div class="ac-list" id="originList" role="listbox"></div>
           </div>
-          <button class="location-btn" id="locationBtn" onclick="useMyLocation()" title="Mevcut konumumu kullan" style="display:none">📍</button>
+          <button class="location-btn" id="locationBtn" onclick="useMyLocation()" title="Mevcut konumumu kullan" style="display:none"><svg class="i" aria-hidden="true"><use href="#i-locate"/></svg></button>
         </div>
         <div class="input-row">
-          <div class="input-icon end">▲</div>
+          <div class="input-icon end"><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg></div>
           <div class="ac-wrap">
             <input id="destination" class="pac-input" type="text" placeholder="Nereye? (şehir veya adres)" autocomplete="off" spellcheck="false" />
             <div class="ac-list" id="destinationList" role="listbox"></div>
@@ -657,27 +709,27 @@
       <div class="section-label">Araç Tipi</div>
       <div class="vehicle-grid">
         <button class="vehicle-btn active" data-type="car" onclick="selectVehicle(this)">
-          <span class="icon">🚗</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-car"/></svg></span>
           <span class="label">Binek</span>
         </button>
         <button class="vehicle-btn" data-type="suv" onclick="selectVehicle(this)">
-          <span class="icon">🚙</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-suv"/></svg></span>
           <span class="label">SUV/4x4</span>
         </button>
         <button class="vehicle-btn" data-type="minibus" onclick="selectVehicle(this)">
-          <span class="icon">🚐</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-minibus"/></svg></span>
           <span class="label">Minibüs</span>
         </button>
         <button class="vehicle-btn" data-type="motorcycle" onclick="selectVehicle(this)">
-          <span class="icon">🏍️</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-motorcycle"/></svg></span>
           <span class="label">Motosiklet</span>
         </button>
         <button class="vehicle-btn" data-type="truck" onclick="selectVehicle(this)">
-          <span class="icon">🚛</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-truck"/></svg></span>
           <span class="label">Kamyon</span>
         </button>
         <button class="vehicle-btn" data-type="bus" onclick="selectVehicle(this)">
-          <span class="icon">🚌</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-bus"/></svg></span>
           <span class="label">Otobüs</span>
         </button>
       </div>
@@ -688,19 +740,19 @@
       <div class="section-label">Yakıt Türü</div>
       <div class="vehicle-grid" style="grid-template-columns:repeat(4,1fr)">
         <button class="vehicle-btn active" data-fuel="benzin" onclick="selectFuel(this)">
-          <span class="icon">⛽</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-pump"/></svg></span>
           <span class="label">Benzin</span>
         </button>
         <button class="vehicle-btn" data-fuel="motorin" onclick="selectFuel(this)">
-          <span class="icon">🛢️</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-drop"/></svg></span>
           <span class="label">Motorin</span>
         </button>
         <button class="vehicle-btn" data-fuel="lpg" onclick="selectFuel(this)">
-          <span class="icon">🔵</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg></span>
           <span class="label">LPG</span>
         </button>
         <button class="vehicle-btn" data-fuel="elektrik" onclick="selectFuel(this)">
-          <span class="icon">⚡</span>
+          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg></span>
           <span class="label">Elektrik</span>
         </button>
       </div>
@@ -748,7 +800,7 @@
 
     <!-- CALC BUTTON -->
     <button class="calc-btn" id="calcBtn" onclick="calculate()">
-      🧮 Hesapla
+      <svg class="i" aria-hidden="true"><use href="#i-calc"/></svg> Hesapla
     </button>
 
     <!-- RESULTS -->
@@ -762,21 +814,21 @@
         <div class="total-amount" id="totalAmount">0 ₺</div>
         <div class="total-sub" id="totalSub"></div>
         <div id="ferryHeroBar" style="display:none; margin-top:12px; padding:10px 14px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); border-radius:10px;">
-          <div style="font-size:0.72rem; color:#93c5fd; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:4px;">⛴️ Feribot dahil tahmini toplam</div>
+          <div style="font-size:0.8rem; font-weight:600; color:#a9c8ee; margin-bottom:4px; display:flex; align-items:center; gap:6px;"><svg class="i" aria-hidden="true"><use href="#i-ferry"/></svg> Feribot dahil tahmini toplam</div>
           <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">
-            <span id="ferryTotalAmount" style="font-family:'Space Grotesk',sans-serif; font-size:1.9rem; font-weight:700; color:#bfdbfe;">—</span>
-            <span style="font-size:0.78rem; color:#93c5fd;" id="ferryTotalNote"></span>
+            <span id="ferryTotalAmount" style="font-family:'Space Grotesk',sans-serif; font-size:1.9rem; font-weight:700; color:#cfe0f5;">—</span>
+            <span style="font-size:0.78rem; color:#a9c8ee;" id="ferryTotalNote"></span>
           </div>
         </div>
       </div>
 
       <div class="route-info">
         <div class="info-card">
-          <div class="ic-label">📍 Mesafe</div>
+          <div class="ic-label"><svg class="i" aria-hidden="true"><use href="#i-route"/></svg> Mesafe</div>
           <div class="ic-val" id="routeDistance">—</div>
         </div>
         <div class="info-card">
-          <div class="ic-label">⏱️ Süre</div>
+          <div class="ic-label"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg> Süre</div>
           <div class="ic-val" id="routeDuration">—</div>
         </div>
       </div>
@@ -784,7 +836,7 @@
       <div class="breakdown">
         <div class="breakdown-item">
           <div class="breakdown-left">
-            <span class="breakdown-icon" id="fuelIcon">⛽</span>
+            <span class="breakdown-icon" id="fuelIcon"><svg class="i" aria-hidden="true"><use href="#i-pump"/></svg></span>
             <div>
               <div class="breakdown-name" id="fuelName">Yakıt Masrafı</div>
               <div class="breakdown-detail" id="fuelDetail"></div>
@@ -794,7 +846,7 @@
         </div>
         <div class="breakdown-item">
           <div class="breakdown-left">
-            <span class="breakdown-icon">🛣️</span>
+            <span class="breakdown-icon"><svg class="i" aria-hidden="true"><use href="#i-road"/></svg></span>
             <div>
               <div class="breakdown-name">OGS/HGS Geçiş Ücretleri</div>
               <div class="breakdown-detail" id="tollDetail"></div>
@@ -805,13 +857,13 @@
       </div>
 
       <div id="tollListWrap">
-        <div class="section-label" style="margin-bottom:8px">Geçiş Noktaları</div>
+        <div class="section-label" style="margin-bottom:8px">Geçiş noktaları</div>
         <div class="toll-list" id="tollList"></div>
       </div>
 
       <div id="evWrap" style="display:none">
         <div class="ev-head">
-          <div class="section-label" style="margin:0">⚡ Rota Üzerindeki Şarj İstasyonları</div>
+          <div class="section-label" style="margin:0;display:flex;align-items:center;gap:6px"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg> Rota üzerindeki şarj istasyonları</div>
           <div class="ev-chips">
             <button class="ev-chip active" id="evChipDc" onclick="setEvFilter(true)">Hızlı DC</button>
             <button class="ev-chip" id="evChipAll" onclick="setEvFilter(false)">AC dahil</button>
@@ -823,7 +875,7 @@
       </div>
 
       <div class="per-person" id="perPersonRow" style="display:none">
-        <span class="per-person-label">👤 Kişi başı maliyet</span>
+        <span class="per-person-label"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg> Kişi başı maliyet</span>
         <span class="per-person-val" id="perPersonVal">—</span>
       </div>
 
@@ -837,7 +889,7 @@
   <!-- MAP -->
   <div id="map-container" style="position:relative;">
     <div class="map-placeholder" id="mapPlaceholder">
-      <div class="mp-icon">🗺️</div>
+      <div class="mp-icon"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg></div>
       <p>Güzergahı hesapladıktan sonra harita burada görünecek</p>
     </div>
     <div id="map"></div>
@@ -846,6 +898,7 @@
 </main>
 
 <script>
+const ic = (n, c = '') => `<svg class="i ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 // ═══════════════════════════════════════════════
 // KGM GEÇİŞ ÜCRETLERİ — 2025 TARİFESİ
 // Kaynak: kgm.gov.tr — Sınıf 1 (binek araç)
@@ -1002,7 +1055,7 @@ function configureFuelUi(resetConsumption) {
   document.getElementById('consUnit').textContent = ev ? 'kWh/100km' : 'L/100km';
   document.getElementById('priceLabel').textContent = ev ? 'Şarj fiyatı (₺/kWh)' : 'Yakıt fiyatı (₺/L)';
   const nm = document.getElementById('fuelName'); if (nm) nm.textContent = ev ? 'Şarj Masrafı' : 'Yakıt Masrafı';
-  const ico = document.getElementById('fuelIcon'); if (ico) ico.textContent = ev ? '⚡' : '⛽';
+  const ico = document.getElementById('fuelIcon'); if (ico) ico.innerHTML = ic(ev ? 'bolt' : 'pump');
   document.getElementById('evPresets').classList.toggle('visible', ev);
   document.getElementById('evPresetAc').textContent = `AC ort. ${EV_AVG.ac.toFixed(2)} ₺`;
   document.getElementById('evPresetDc').textContent = `Hızlı DC ort. ${EV_AVG.dc.toFixed(2)} ₺`;
@@ -1211,7 +1264,7 @@ function calculate() {
         display:none; background:rgba(59,130,246,0.12);
         border:1px solid rgba(59,130,246,0.5);
         border-radius:10px; padding:12px 16px;
-        font-size:0.84rem; color:#93c5fd; line-height:1.5;
+        font-size:0.84rem; color:#a9c8ee; line-height:1.5;
         margin-top:2px;
       `;
       document.getElementById('tollCost').closest('.breakdown-item').after(ferryWarn);
@@ -1231,26 +1284,26 @@ function calculate() {
       let ferryInfo = '';
       if (routeFullText.includes('eskihisar') || routeFullText.includes('topçular') || routeFullText.includes('topcular')) {
         ferryInfo = `
-          <div style="margin-top:6px;font-size:0.79rem;color:#bfdbfe;">
-            📍 <strong>Eskihisar → Topçular (İDO)</strong><br>
+          <div style="margin-top:6px;font-size:0.79rem;color:#cfe0f5;">
+            ${ic('pin')} <strong>Eskihisar → Topçular (İDO)</strong><br>
             Otomobil: <strong>730 ₺</strong> (gece 22:00–10:00 arası: 630 ₺)<br>
             Motosiklet: 400 ₺ · Minibüs: 1.260 ₺ · Ortalama süre: 35 dk
           </div>`;
       } else if (routeFullText.includes('yenikapı') || routeFullText.includes('yenikapi') || routeFullText.includes('yalova')) {
         ferryInfo = `
-          <div style="margin-top:6px;font-size:0.79rem;color:#bfdbfe;">
-            📍 <strong>Yenikapı → Yalova (İDO Hızlı Feribot)</strong><br>
+          <div style="margin-top:6px;font-size:0.79rem;color:#cfe0f5;">
+            ${ic('pin')} <strong>Yenikapı → Yalova (İDO Hızlı Feribot)</strong><br>
             Bilet ücreti için ido.com.tr adresini kontrol edin. Süre: ~75 dk
           </div>`;
       } else if (routeFullText.includes('bandırma') || routeFullText.includes('bandirma')) {
         ferryInfo = `
-          <div style="margin-top:6px;font-size:0.79rem;color:#bfdbfe;">
-            📍 <strong>İstanbul → Bandırma (İDO)</strong><br>
+          <div style="margin-top:6px;font-size:0.79rem;color:#cfe0f5;">
+            ${ic('pin')} <strong>İstanbul → Bandırma (İDO)</strong><br>
             Bilet ücreti için ido.com.tr adresini kontrol edin. Süre: ~2 saat
           </div>`;
       } else {
         ferryInfo = `
-          <div style="margin-top:6px;font-size:0.79rem;color:#bfdbfe;">
+          <div style="margin-top:6px;font-size:0.79rem;color:#cfe0f5;">
             Feribot hattı ve güncel bilet fiyatı için <strong>ido.com.tr</strong> veya <strong>budo.com.tr</strong> adreslerini ziyaret edin.
           </div>`;
       }
@@ -1267,8 +1320,8 @@ function calculate() {
       }
 
       ferryWarn.innerHTML = `
-        ⛴️ <strong style="color:#bfdbfe">Bu rota feribot içeriyor</strong><br>
-        <span style="color:#93c5fd;font-size:0.8rem;">
+        ${ic('ferry')} <strong style="color:#cfe0f5">Bu rota feribot içeriyor</strong><br>
+        <span style="color:#a9c8ee;font-size:0.8rem;">
           Feribot bilet ücreti hesaba <strong>dahil değildir</strong> — aşağıdaki tahmini fiyatları toplam maliyete ekleyin.
         </span>
         ${ferryInfo}
@@ -1296,7 +1349,7 @@ function calculate() {
         const fee = t.fees[selectedVehicle] || 0;
         tollList.innerHTML += `
           <div class="toll-item">
-            <span class="toll-name">🛣️ ${t.name}</span>
+            <span class="toll-name">${ic('road')} ${t.name}</span>
             <span class="toll-price">${formatTL(fee)}</span>
           </div>`;
       });
@@ -1315,7 +1368,7 @@ function calculate() {
     }
 
     // Harita — aktif rotayı göster
-    const colors = ['#e8a020', '#34c47c', '#8892a4'];
+    const colors = allRoutes.map((_, i) => ((window._routeMeta || [])[i] || {}).color || '#93a1af');
     if (!directionsRenderer) {
       directionsRenderer = new google.maps.DirectionsRenderer({
         polylineOptions: { strokeColor: colors[0], strokeWeight: 5 },
@@ -1323,7 +1376,7 @@ function calculate() {
       });
       directionsRenderer.setMap(map);
     }
-    directionsRenderer.setOptions({ polylineOptions: { strokeColor: colors[idx] || '#e8a020', strokeWeight: 5 } });
+    directionsRenderer.setOptions({ polylineOptions: { strokeColor: colors[idx] || '#dcb87a', strokeWeight: 5 } });
 
     // Tüm rotaları hafif göster, seçiliyi kalın
     if (window._altRenderers) {
@@ -1342,7 +1395,7 @@ function calculate() {
       const fakeResult = window._lastDirectionsResult;
       if (fakeResult && fakeResult.routes[i]) {
         const fr = new google.maps.DirectionsRenderer({
-          polylineOptions: { strokeColor: colors[i] || '#8892a4', strokeWeight: 3, strokeOpacity: 0.4 },
+          polylineOptions: { strokeColor: colors[i] || '#93a1af', strokeWeight: 3, strokeOpacity: 0.4 },
           suppressMarkers: true,
         });
         fr.setMap(map);
@@ -1365,15 +1418,7 @@ function calculate() {
         position: { lat: t.lat, lng: t.lng },
         map: map,
         title: t.name,
-        label: { text: '₺', color: '#0f1117', fontWeight: 'bold', fontSize: '12px' },
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 16,
-          fillColor: '#e8a020',
-          fillOpacity: 1,
-          strokeColor: '#0f1117',
-          strokeWeight: 2,
-        },
+        icon: tollMarkerIcon(),
         zIndex: 10,
       });
       marker.addListener('click', () => {
@@ -1381,8 +1426,8 @@ function calculate() {
 
         const araExitsHtml = isFullPackage ? `
           <details style="margin-top:10px;">
-            <summary style="cursor:pointer;font-size:0.8rem;color:#c07800;font-weight:600;padding:4px 0;">
-              📍 Ara çıkış ücretleri (otomobil, Osmangazi dahil)
+            <summary style="cursor:pointer;font-size:0.8rem;color:#9a7434;font-weight:600;padding:4px 0;">
+              Ara çıkış ücretleri (otomobil, Osmangazi dahil)
             </summary>
             <table style="width:100%;border-collapse:collapse;font-size:0.78rem;margin-top:6px;">
               <tr style="border-bottom:1px solid #eee;">
@@ -1391,7 +1436,7 @@ function calculate() {
                 <th style="text-align:right;padding:3px 0;color:#888;font-weight:500;">Motosiklet</th>
               </tr>
               ${IST_IZM_EXITS.map(e => `
-                <tr style="border-bottom:1px solid #f5f5f5;${t.exit === e ? 'background:#fff8e6;' : ''}">
+                <tr style="border-bottom:1px solid #f5f5f5;${t.exit === e ? 'background:#fbf6ea;' : ''}">
                   <td style="padding:3px 0;color:#444">${t.exit === e ? '▶ ' : ''}${e.name}</td>
                   <td style="text-align:right;font-weight:600;color:#333">${e.car.toLocaleString('tr-TR')} ₺</td>
                   <td style="text-align:right;color:#666">${e.moto.toLocaleString('tr-TR')} ₺</td>
@@ -1402,8 +1447,8 @@ function calculate() {
 
         const content = `
           <div style="font-family:Inter,sans-serif;padding:4px 2px;min-width:240px;max-width:300px;">
-            <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;color:#1a1a1a">🛣️ ${t.name}</div>
-            ${isFullPackage ? `<div style="font-size:0.75rem;color:#c07800;margin-bottom:8px;background:#fff8e6;padding:4px 8px;border-radius:6px;">${t.partial ? `📦 Tahmini ücret — Gebze girişinden <b>${t.exit.name}</b> çıkışına kadar (Osmangazi dahil)` : '📦 Tam parkur paketi — Osmangazi Köprüsü dahil tüm gişeler'}</div>` : ''}
+            <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;color:#1f2933;display:flex;align-items:center;gap:6px">${ic('road')} ${t.name}</div>
+            ${isFullPackage ? `<div style="font-size:0.75rem;color:#9a7434;margin-bottom:8px;background:#fbf6ea;padding:4px 8px;border-radius:6px;">${t.partial ? `${ic('box')} Tahmini ücret — Gebze girişinden <b>${t.exit.name}</b> çıkışına kadar (Osmangazi dahil)` : ic('box') + ' Tam parkur paketi — Osmangazi Köprüsü dahil tüm gişeler'}</div>` : ''}
             <table style="width:100%;border-collapse:collapse;font-size:0.82rem;color:#444">
               <tr><td style="padding:3px 0;color:#666">Binek / SUV</td><td style="text-align:right;font-weight:600">${t.fees.car.toLocaleString('tr-TR')} ₺</td></tr>
               <tr><td style="padding:3px 0;color:#666">Minibüs</td><td style="text-align:right;font-weight:600">${t.fees.minibus.toLocaleString('tr-TR')} ₺</td></tr>
@@ -1411,12 +1456,12 @@ function calculate() {
               <tr><td style="padding:3px 0;color:#666">Kamyon / Tır</td><td style="text-align:right;font-weight:600">${t.fees.truck > 0 ? t.fees.truck.toLocaleString('tr-TR') + ' ₺' : 'Geçemez'}</td></tr>
               <tr><td style="padding:3px 0;color:#666">Otobüs</td><td style="text-align:right;font-weight:600">${t.fees.bus > 0 ? t.fees.bus.toLocaleString('tr-TR') + ' ₺' : 'Geçemez'}</td></tr>
             </table>
-            <div style="margin-top:8px;padding:6px 8px;background:#fff8e6;border-radius:6px;font-size:0.8rem;">
+            <div style="margin-top:8px;padding:6px 8px;background:#fbf6ea;border-radius:6px;font-size:0.8rem;">
               <strong>Seçili aracınız:</strong>
-              <span style="color:#c07800;font-weight:700"> ${fee > 0 ? fee.toLocaleString('tr-TR') + ' ₺' : 'Bu araç geçemez!'}</span>
+              <span style="color:#9a7434;font-weight:700"> ${fee > 0 ? fee.toLocaleString('tr-TR') + ' ₺' : 'Bu araç geçemez!'}</span>
             </div>
             ${araExitsHtml}
-            ${t.note ? `<div style="margin-top:6px;font-size:0.75rem;color:#888;line-height:1.4;">ℹ️ ${t.note}</div>` : ''}
+            ${t.note ? `<div style="margin-top:6px;font-size:0.75rem;color:#888;line-height:1.4;">${ic('info')} ${t.note}</div>` : ''}
           </div>`;
         window._infoWindow.setContent(content);
         window._infoWindow.open(map, marker);
@@ -1455,9 +1500,9 @@ function calculate() {
   const REQUESTS = [
     {
       label: 'fast',
-      badge: '⚡ EN HIZLI',
+      badge: ic('bolt') + ' En hızlı',
       badgeClass: 'badge-fast',
-      color: '#e8a020',
+      color: '#dcb87a',
       req: {
         origin: routePoint('origin', origin),
         destination: routePoint('destination', destination),
@@ -1468,9 +1513,9 @@ function calculate() {
     },
     {
       label: 'cheap',
-      badge: '💚 EN UCUZ',
+      badge: ic('coin') + ' En ucuz',
       badgeClass: 'badge-cheap',
-      color: '#34c47c',
+      color: '#78cdb0',
       req: {
         origin: routePoint('origin', origin),
         destination: routePoint('destination', destination),
@@ -1482,9 +1527,9 @@ function calculate() {
     },
     ferryRelevant ? {
       label: 'ferry',
-      badge: '⛴️ FERİBOT',
+      badge: ic('ferry') + ' Feribotlu',
       badgeClass: 'badge-ferry',
-      color: '#60a5fa',
+      color: '#86b3e6',
       req: {
         origin: routePoint('origin', origin),
         destination: routePoint('destination', destination),
@@ -1496,9 +1541,9 @@ function calculate() {
     } : null,
     {
       label: 'free',
-      badge: '🌿 ÜCRETSİZ YOL',
+      badge: ic('leaf') + ' Ücretsiz yol',
       badgeClass: 'badge-free',
-      color: '#a78bfa',
+      color: '#b4a4e6',
       req: {
         origin: routePoint('origin', origin),
         destination: routePoint('destination', destination),
@@ -1567,16 +1612,16 @@ function calculate() {
 
     allRoutes.forEach((r, i) => {
       const meta = (window._routeMeta || [])[i] || {};
-      const ferryTag = r.hasFerry ? ' ⛴️' : '';
+      const ferryTag = r.hasFerry ? ' ' + ic('ferry') : '';
       const badge = meta.badge
         ? `<div class="route-badge ${meta.badgeClass}">${meta.badge}${ferryTag}</div>`
-        : `<div class="route-badge badge-alt">🔀 ALTERNATİF${ferryTag}</div>`;
-      const color = meta.color || '#8892a4';
+        : `<div class="route-badge badge-alt">${ic('route')} Alternatif${ferryTag}</div>`;
+      const color = meta.color || '#93a1af';
       const tab = document.createElement('button');
       const isFerryTab = meta.label === 'ferry';
       tab.className = 'route-tab' + (isFerryTab ? ' ferry-tab' : '') + (i === 0 ? ' active' : '');
       const displayTotal = r.hasFerry && isFerryTab
-        ? formatTL(r.total) + ' +⛴️'
+        ? formatTL(r.total) + ' + ' + ic('ferry')
         : formatTL(r.total);
       tab.innerHTML = `
         ${badge}
@@ -1631,7 +1676,7 @@ const EV_TARIFFS = [
   { re: /\bon ?charge\b/,          name: 'Oncharge',         ac: [9.99, 9.99],   dc: [13.50, 13.50] },
   { re: /\boto-? ?jet\b/,          name: 'Oto-Jet',          ac: [10.99, 10.99], dc: [12.40, 15.49] },
   { re: /\botopriz\b/,             name: 'Otopriz',          ac: [9.90, 9.90],   dc: [13.90, 13.90] },
-  { re: /\bpower sarj\b/,          name: 'Power Şarj',       ac: [11.19, 11.19], dc: [13.99, 13.99] },
+  { re: /\bpower ?sarj\b/,          name: 'Power Şarj',       ac: [11.19, 11.19], dc: [13.99, 13.99] },
   { re: /\brst\b/,                 name: 'RST Charge Point', ac: [5.90, 5.90],   dc: [13.99, 13.99] },
   { re: /\bsarjon\b/,              name: 'Sarjon',           ac: [10.99, 10.99], dc: [11.99, 13.99] },
   { re: /\btoger\b/,               name: 'Toger',            ac: [9.90, 9.90],   dc: [13.39, 13.39] },
@@ -1661,6 +1706,17 @@ function priceHtml(st) {
   if (st.conns.some(c => c.cur === 'DC') && t.dc) parts.push(`DC ${fmtRange(t.dc)}`);
   if (!parts.length) parts.push([t.ac && 'AC ' + fmtRange(t.ac), t.dc && 'DC ' + fmtRange(t.dc)].filter(Boolean).join(' · '));
   return `${escHtml(t.name)}: <b>${parts.join(' · ')} ₺/kWh</b>${t.note ? ' · ' + escHtml(t.note) : ''}${t.old ? ' <span style="opacity:.7">(Nisan 2026 verisi, teyit edin)</span>' : ''}`;
+}
+
+function svgIcon(svg, size) {
+  return { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg), scaledSize: new google.maps.Size(size, size), anchor: new google.maps.Point(size / 2, size / 2) };
+}
+function evMarkerIcon(dc) {
+  const c = dc ? '#78cdb0' : '#86b3e6';
+  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13.5" fill="${c}" stroke="#131a21" stroke-width="2.5"/><path d="M17.4 7.5 10.5 17h4.8l-.9 7.5 7.1-9.8h-4.9z" fill="#131a21"/></svg>`, 32);
+}
+function tollMarkerIcon() {
+  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="14.5" fill="#dcb87a" stroke="#131a21" stroke-width="2.5"/><text x="17" y="22.5" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#131a21">₺</text></svg>`, 34);
 }
 
 let evFilterDc = true;
@@ -1763,19 +1819,18 @@ function renderEv(j) {
     const marker = new google.maps.Marker({
       position: { lat: s.lat, lng: s.lng }, map,
       title: s.title || s.operator,
-      label: { text: '⚡', fontSize: '13px' },
-      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 13, fillColor: s.dc ? '#34c47c' : '#60a5fa', fillOpacity: 1, strokeColor: '#0f1117', strokeWeight: 2 },
+      icon: evMarkerIcon(s.dc),
       zIndex: 8,
     });
     const open = () => {
       window._infoWindow.setContent(`
         <div style="font-family:Inter,sans-serif;padding:4px 2px;min-width:230px;max-width:290px;color:#333">
-          <div style="font-weight:700;font-size:0.92rem;margin-bottom:2px">⚡ ${escHtml(s.operator || s.title || 'Şarj istasyonu')}</div>
+          <div style="font-weight:700;font-size:0.92rem;margin-bottom:2px;display:flex;align-items:center;gap:6px">${ic('bolt')} ${escHtml(s.operator || s.title || 'Şarj istasyonu')}</div>
           <div style="font-size:0.76rem;color:#777;margin-bottom:6px">${escHtml(s.title && s.title !== s.operator ? s.title + ' · ' : '')}${escHtml(s.addr)}</div>
           <table style="width:100%;border-collapse:collapse;font-size:0.8rem">
-            ${s.conns.map(c => `<tr><td style="padding:2px 0"><b style="color:${c.cur === 'DC' ? '#1a9d5c' : '#2b7fd6'}">${c.cur}</b> ${c.kw ? c.kw + ' kW' : ''}</td><td>${escHtml(c.t)}</td><td style="text-align:right">×${c.n}</td></tr>`).join('')}
+            ${s.conns.map(c => `<tr><td style="padding:2px 0"><b style="color:${c.cur === 'DC' ? '#3a9b7e' : '#4f86c6'}">${c.cur}</b> ${c.kw ? c.kw + ' kW' : ''}</td><td>${escHtml(c.t)}</td><td style="text-align:right">×${c.n}</td></tr>`).join('')}
           </table>
-          <div style="margin-top:6px;padding:5px 8px;background:#f2fbf6;border-radius:6px;font-size:0.76rem;line-height:1.45">${priceHtml(s).replace(/color:[^;"]*/g, '')}</div>
+          <div style="margin-top:6px;padding:5px 8px;background:#f0f8f4;border-radius:6px;font-size:0.76rem;line-height:1.45">${priceHtml(s).replace(/color:[^;"]*/g, '')}</div>
           ${s.usage ? `<div style="margin-top:5px;font-size:0.72rem;color:#888">Kayıtlı bilgi: ${escHtml(s.usage)}</div>` : ''}
           <div style="margin-top:5px;font-size:0.72rem;color:#888">Rotanın ${s.routeKm}. km'si, yola ${s.offKm} km</div>
         </div>`);
@@ -1866,7 +1921,7 @@ function setupAutocomplete(kind) {
     if (!items.length) { message('Sonuç bulunamadı'); return; }
     list.innerHTML = items.map((it, i) =>
       '<div class="ac-item" role="option" data-i="' + i + '">' +
-        '<span class="ac-pin">📍</span>' +
+        '<span class="ac-pin">' + ic('pin') + '</span>' +
         '<div class="ac-text"><div class="ac-main">' + highlight(it.main) + '</div>' +
         (it.sub && it.sub.text ? '<div class="ac-sub">' + escHtml(it.sub.text) + '</div>' : '') +
         '</div></div>'
@@ -1904,7 +1959,7 @@ function setupAutocomplete(kind) {
     input.addEventListener('focus', () => {
       if (input.value.trim()) return;
       items = [];
-      list.innerHTML = '<div class="ac-item" data-here="1"><span class="ac-pin">🎯</span>' +
+      list.innerHTML = '<div class="ac-item" data-here="1"><span class="ac-pin">' + ic('locate') + '</span>' +
         '<div class="ac-text"><div class="ac-main">Mevcut konumumu kullan</div>' +
         '<div class="ac-sub">Tarayıcı izin isteyecek</div></div></div>';
       list.classList.add('open');
@@ -1978,7 +2033,7 @@ function useMyLocation() {
 
   btn.innerHTML = '<span class="loc-spinner"></span>';
   btn.disabled = true;
-  const done = () => { btn.innerHTML = '📍'; btn.disabled = false; };
+  const done = () => { btn.innerHTML = ic('locate'); btn.disabled = false; };
 
   navigator.geolocation.getCurrentPosition(
     async pos => {
@@ -2026,16 +2081,16 @@ async function initMap() {
 
 // Dark map style
 const darkMapStyle = [
-  { elementType:'geometry', stylers:[{color:'#1a1f2e'}] },
-  { elementType:'labels.text.fill', stylers:[{color:'#8892a4'}] },
-  { elementType:'labels.text.stroke', stylers:[{color:'#1a1f2e'}] },
-  { featureType:'road', elementType:'geometry', stylers:[{color:'#2a2f42'}] },
-  { featureType:'road.highway', elementType:'geometry', stylers:[{color:'#3a3f55'}] },
-  { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{color:'#e8a020'}] },
-  { featureType:'water', elementType:'geometry', stylers:[{color:'#0d1117'}] },
+  { elementType:'geometry', stylers:[{color:'#182029'}] },
+  { elementType:'labels.text.fill', stylers:[{color:'#8fa0ae'}] },
+  { elementType:'labels.text.stroke', stylers:[{color:'#182029'}] },
+  { featureType:'road', elementType:'geometry', stylers:[{color:'#28343f'}] },
+  { featureType:'road.highway', elementType:'geometry', stylers:[{color:'#37454f'}] },
+  { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{color:'#dcb87a'}] },
+  { featureType:'water', elementType:'geometry', stylers:[{color:'#0f171e'}] },
   { featureType:'poi', stylers:[{visibility:'off'}] },
   { featureType:'transit', stylers:[{visibility:'off'}] },
-  { featureType:'administrative', elementType:'geometry.stroke', stylers:[{color:'#2a2f42'}] },
+  { featureType:'administrative', elementType:'geometry.stroke', stylers:[{color:'#2b3843'}] },
 ];
 
 // Map başlangıçta gizli
