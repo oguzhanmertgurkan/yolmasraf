@@ -55,6 +55,7 @@ function parseOpet(body) {
 }
 async function fromOpet() {
   const body = await getText('https://api.opet.com.tr/api/fuelprices/allprices', {
+    ms: 5000,
     headers: { accept: 'application/json, text/plain, */*', origin: 'https://www.opet.com.tr', referer: 'https://www.opet.com.tr/' },
   });
   const r = parseOpet(body);
@@ -69,6 +70,7 @@ function parsePetrolOfisi(html) {
   if (!header) throw new Error('tablo başlığı bulunamadı');
   const h = header.map(c => c.replace(/<[^>]+>/g, ' ').toLowerCase());
   const gi = h.findIndex(x => /95|benzin/.test(x));
+  const di = h.findIndex(x => /diesel|motorin/.test(x));
   const li = h.findIndex(x => /otogaz/.test(x));
   if (li < 0) throw new Error('otogaz sütunu yok');
   const grab = (cell) => {
@@ -76,16 +78,19 @@ function parsePetrolOfisi(html) {
     const v = m ? parseFloat(m[1].replace(',', '.')) : NaN;
     return v > 0 ? v : null;
   };
-  const benzin = [], lpg = [];
+  const benzin = [], motorin = [], lpg = [];
   for (const cells of rows) {
     const b = gi >= 0 ? grab(cells[gi]) : null;
+    const d = di >= 0 ? grab(cells[di]) : null;
     const l = grab(cells[li]);
     if (b != null) benzin.push(b);
+    // Motorin sütunu da benzinle oranla doğrulanır (yanlış sütun = gazyağı/fuel oil olmasın)
+    if (d != null && b != null && d >= b * 0.8 && d <= b * 1.8) motorin.push(d);
     // Sütun kayarsa yanlış değeri LPG sanmamak için benzinle oranını doğrula
     if (l != null && (b == null || (l >= b * 0.25 && l <= b * 0.8))) lpg.push(l);
   }
   if (!lpg.length) throw new Error('otogaz fiyatı bulunamadı');
-  return { prices: { lpg: mean(lpg), ...(benzin.length ? { benzin: mean(benzin) } : {}) }, count: lpg.length };
+  return { prices: { lpg: mean(lpg), ...(benzin.length ? { benzin: mean(benzin) } : {}), ...(motorin.length ? { motorin: mean(motorin) } : {}) }, count: lpg.length };
 }
 async function fromPetrolOfisi() {
   const html = await getText('https://www.petrolofisi.com.tr/akaryakit-fiyatlari', { headers: { accept: 'text/html' } });
