@@ -449,6 +449,27 @@
     .pac-item:hover { background: var(--surface2) !important; }
     .pac-item-query { color: var(--text) !important; }
 
+    /* ── ÖNERİ KUTUSU (Places API New) ── */
+    .ac-wrap { position: relative; flex: 1; min-width: 0; }
+    .ac-list {
+      display: none; position: absolute; left: 0; right: 0; top: calc(100% + 6px);
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5); z-index: 60;
+      max-height: 320px; overflow-y: auto;
+    }
+    .ac-list.open { display: block; }
+    .ac-item { display: flex; gap: 10px; align-items: center; padding: 10px 14px; cursor: pointer; border-top: 1px solid var(--border); }
+    .ac-item:first-child { border-top: none; }
+    .ac-item:hover, .ac-item.active { background: var(--surface2); }
+    .ac-pin { flex-shrink: 0; opacity: 0.7; }
+    .ac-text { min-width: 0; }
+    .ac-main { color: var(--text); font-size: 0.9rem; }
+    .ac-main b { color: var(--accent); font-weight: 600; }
+    .ac-sub { color: var(--muted); font-size: 0.74rem; margin-top: 1px; }
+    .ac-msg { padding: 12px 14px; font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+    .route-hint { display: none; margin-top: 8px; font-size: 0.78rem; line-height: 1.5; color: #fca5a5; }
+    .route-hint.visible { display: block; }
+
     .location-btn {
       width: 38px; height: 38px; flex-shrink: 0;
       background: var(--surface2);
@@ -579,14 +600,21 @@
         <div class="route-line"></div>
         <div class="input-row">
           <div class="input-icon start">⬤</div>
-          <input id="origin" class="pac-input" type="text" placeholder="Nereden? (şehir veya adres)" autocomplete="off" />
+          <div class="ac-wrap">
+            <input id="origin" class="pac-input" type="text" placeholder="Nereden? (şehir veya adres)" autocomplete="off" spellcheck="false" />
+            <div class="ac-list" id="originList" role="listbox"></div>
+          </div>
           <button class="location-btn" id="locationBtn" onclick="useMyLocation()" title="Mevcut konumumu kullan" style="display:none">📍</button>
         </div>
         <div class="input-row">
           <div class="input-icon end">▲</div>
-          <input id="destination" class="pac-input" type="text" placeholder="Nereye? (şehir veya adres)" autocomplete="off" />
+          <div class="ac-wrap">
+            <input id="destination" class="pac-input" type="text" placeholder="Nereye? (şehir veya adres)" autocomplete="off" spellcheck="false" />
+            <div class="ac-list" id="destinationList" role="listbox"></div>
+          </div>
         </div>
       </div>
+      <div class="route-hint" id="routeHint"></div>
     </div>
 
     <!-- VEHICLE TYPE -->
@@ -1273,8 +1301,8 @@ function calculate() {
       badgeClass: 'badge-fast',
       color: '#e8a020',
       req: {
-        origin: origin + ', Türkiye',
-        destination: destination + ', Türkiye',
+        origin: routePoint('origin', origin),
+        destination: routePoint('destination', destination),
         travelMode: google.maps.TravelMode.DRIVING,
         provideRouteAlternatives: false,
         language: 'tr',
@@ -1286,8 +1314,8 @@ function calculate() {
       badgeClass: 'badge-cheap',
       color: '#34c47c',
       req: {
-        origin: origin + ', Türkiye',
-        destination: destination + ', Türkiye',
+        origin: routePoint('origin', origin),
+        destination: routePoint('destination', destination),
         travelMode: google.maps.TravelMode.DRIVING,
         avoidTolls: true,
         provideRouteAlternatives: false,
@@ -1300,8 +1328,8 @@ function calculate() {
       badgeClass: 'badge-ferry',
       color: '#60a5fa',
       req: {
-        origin: origin + ', Türkiye',
-        destination: destination + ', Türkiye',
+        origin: routePoint('origin', origin),
+        destination: routePoint('destination', destination),
         waypoints: [ESKIHISAR, TOPCULAR],
         travelMode: google.maps.TravelMode.DRIVING,
         provideRouteAlternatives: false,
@@ -1314,8 +1342,8 @@ function calculate() {
       badgeClass: 'badge-free',
       color: '#a78bfa',
       req: {
-        origin: origin + ', Türkiye',
-        destination: destination + ', Türkiye',
+        origin: routePoint('origin', origin),
+        destination: routePoint('destination', destination),
         travelMode: google.maps.TravelMode.DRIVING,
         avoidTolls: true,
         avoidHighways: true,
@@ -1422,227 +1450,239 @@ function calculate() {
 }
 
 // ═══════════════════════════════════════════════
-// KULLANICI KONUMU
+// KONUM ÖNERİLERİ — Places API (New) AutocompleteSuggestion
+// Eski google.maps.places.Autocomplete widget'ı yeni projelerde çalışmıyor
 // ═══════════════════════════════════════════════
-function useMyLocation() {
-  const btn = document.querySelector('.location-btn');
-  const originInput = document.getElementById('origin');
-  const errorBox = document.getElementById('errorBox');
+const _sel = { origin: null, destination: null }; // { text, placeId } veya { text, lat, lng }
+let _userBias = null;
+let _sessionToken = null;
 
-  if (!navigator.geolocation) {
-    errorBox.textContent = 'Tarayıcınız konum özelliğini desteklemiyor.';
-    errorBox.classList.add('visible');
-    return;
+// Rota isteği için nokta: seçilmiş yer varsa placeId/koordinat, yoksa yazılan metin
+function routePoint(kind, text) {
+  const s = _sel[kind];
+  if (s && s.text === text) {
+    if (s.placeId) return { placeId: s.placeId };
+    if (s.lat !== undefined) return { lat: s.lat, lng: s.lng };
+  }
+  return text + ', Türkiye';
+}
+
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+}
+
+// Eşleşen harfleri vurgula (Google FormattableText.matches)
+function highlight(ft) {
+  const t = ft && ft.text ? ft.text : '';
+  const ms = ft && ft.matches ? ft.matches : [];
+  if (!ms.length) return escHtml(t);
+  let out = '', pos = 0;
+  ms.forEach(m => {
+    const a = m.startOffset || 0, b = m.endOffset;
+    out += escHtml(t.slice(pos, a)) + '<b>' + escHtml(t.slice(a, b)) + '</b>';
+    pos = b;
+  });
+  return out + escHtml(t.slice(pos));
+}
+
+function setHint(msg) {
+  const el = document.getElementById('routeHint');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.classList.toggle('visible', !!msg);
+}
+
+function setupAutocomplete(kind) {
+  const input = document.getElementById(kind);
+  const list = document.getElementById(kind + 'List');
+  let items = [];
+  let active = -1;
+  let timer = null;
+  let seq = 0;
+
+  const close = () => { list.classList.remove('open'); active = -1; };
+  const paint = () => {
+    list.querySelectorAll('.ac-item').forEach((el, i) => el.classList.toggle('active', i === active));
+  };
+  const message = (txt) => {
+    items = [];
+    list.innerHTML = '<div class="ac-msg">' + txt + '</div>';
+    list.classList.add('open');
+  };
+  const choose = (i) => {
+    const it = items[i];
+    if (!it) return;
+    input.value = it.text;
+    _sel[kind] = { text: it.text, placeId: it.placeId };
+    _sessionToken = null;
+    close();
+    setHint('');
+    if (kind === 'origin') document.getElementById('destination').focus();
+  };
+  const render = (suggestions) => {
+    items = suggestions.map(s => {
+      const p = s.placePrediction;
+      return { text: p.text.text, placeId: p.placeId, main: p.mainText, sub: p.secondaryText };
+    });
+    if (!items.length) { message('Sonuç bulunamadı'); return; }
+    list.innerHTML = items.map((it, i) =>
+      '<div class="ac-item" role="option" data-i="' + i + '">' +
+        '<span class="ac-pin">📍</span>' +
+        '<div class="ac-text"><div class="ac-main">' + highlight(it.main) + '</div>' +
+        (it.sub && it.sub.text ? '<div class="ac-sub">' + escHtml(it.sub.text) + '</div>' : '') +
+        '</div></div>'
+    ).join('');
+    active = -1;
+    list.classList.add('open');
+  };
+
+  const query = async (q) => {
+    const mine = ++seq;
+    try {
+      if (!_sessionToken) _sessionToken = new google.maps.places.AutocompleteSessionToken();
+      const req = { input: q, includedRegionCodes: ['tr'], language: 'tr', region: 'tr', sessionToken: _sessionToken };
+      if (_userBias) req.locationBias = _userBias;
+      const res = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(req);
+      if (mine !== seq) return;
+      render((res.suggestions || []).filter(s => s.placePrediction));
+    } catch (err) {
+      if (mine !== seq) return;
+      console.warn('Yer önerileri alınamadı:', err);
+      message('Öneriler şu an yüklenemedi. Yer adını yazıp Hesapla\'ya basabilirsiniz.');
+    }
+  };
+
+  input.addEventListener('input', () => {
+    _sel[kind] = null;
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (q.length < 2) { seq++; close(); return; }
+    timer = setTimeout(() => query(q), 220);
+  });
+
+  // Nereden alanı boşken "Mevcut konumum" seçeneği göster
+  if (kind === 'origin') {
+    input.addEventListener('focus', () => {
+      if (input.value.trim()) return;
+      items = [];
+      list.innerHTML = '<div class="ac-item" data-here="1"><span class="ac-pin">🎯</span>' +
+        '<div class="ac-text"><div class="ac-main">Mevcut konumumu kullan</div>' +
+        '<div class="ac-sub">Tarayıcı izin isteyecek</div></div></div>';
+      list.classList.add('open');
+    });
   }
 
-  btn.classList.add('loading');
-  btn.textContent = '⏳';
+  input.addEventListener('keydown', e => {
+    const open = list.classList.contains('open') && items.length > 0;
+    if (e.key === 'ArrowDown' && open) { e.preventDefault(); active = (active + 1) % items.length; paint(); }
+    else if (e.key === 'ArrowUp' && open) { e.preventDefault(); active = (active - 1 + items.length) % items.length; paint(); }
+    else if (e.key === 'Enter') {
+      if (open) { e.preventDefault(); choose(active >= 0 ? active : 0); }
+      else if (kind === 'destination') { e.preventDefault(); close(); calculate(); }
+      else { close(); document.getElementById('destination').focus(); }
+    }
+    else if (e.key === 'Escape') close();
+  });
+
+  input.addEventListener('blur', close);
+  list.addEventListener('mousedown', e => e.preventDefault()); // tıklarken alan odağını kaybetmesin
+  list.addEventListener('click', e => {
+    const el = e.target.closest('.ac-item');
+    if (!el) return;
+    if (el.dataset.here) { close(); useMyLocation(); return; }
+    choose(parseInt(el.dataset.i, 10));
+  });
+}
+
+// ═══════════════════════════════════════════════
+// KULLANICI KONUMU (yalnızca butona basınca, tarayıcı izniyle)
+// ═══════════════════════════════════════════════
+async function describeLocation(lat, lng) {
+  // 1) Geocoding — anahtarda Geocoding API izinliyse
+  try {
+    const res = await new Promise((resolve, reject) => {
+      new google.maps.Geocoder().geocode(
+        { location: { lat, lng }, language: 'tr', region: 'TR' },
+        (r, s) => (s === 'OK' && r && r.length) ? resolve(r) : reject(s)
+      );
+    });
+    const best = res.find(r => r.types.some(t => ['sublocality', 'neighborhood', 'locality'].includes(t))) || res[0];
+    return best.formatted_address;
+  } catch (e) { console.warn('Geocoder kullanılamadı:', e); }
+
+  // 2) Places (New) — yakın yerin adres bileşenlerinden ilçe/il
+  try {
+    const { Place } = await google.maps.importLibrary('places');
+    const { places } = await Place.searchNearby({
+      fields: ['addressComponents'],
+      locationRestriction: { center: { lat, lng }, radius: 1000 },
+      maxResultCount: 1, language: 'tr', region: 'tr',
+    });
+    const comps = (places && places[0] && places[0].addressComponents) || [];
+    const pick = t => { const c = comps.find(x => x.types.includes(t)); return c ? c.longText : ''; };
+    const district = pick('administrative_area_level_2') || pick('locality');
+    const province = pick('administrative_area_level_1');
+    const label = [district, province].filter(Boolean).join(', ');
+    if (label) return label;
+  } catch (e) { console.warn('Places konum çözümü kullanılamadı:', e); }
+
+  // 3) Koordinat (rota yine doğru hesaplanır)
+  return 'Konumum (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
+}
+
+function useMyLocation() {
+  const btn = document.getElementById('locationBtn');
+  const originInput = document.getElementById('origin');
+  setHint('');
+
+  if (!navigator.geolocation) { setHint('Tarayıcınız konum özelliğini desteklemiyor.'); return; }
+
+  btn.innerHTML = '<span class="loc-spinner"></span>';
+  btn.disabled = true;
+  const done = () => { btn.innerHTML = '📍'; btn.disabled = false; };
 
   navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-
-      // Koordinatları adrese çevir (Reverse Geocoding)
-      const geocoder = new google.maps.Geocoder();
-      geocoder.geocode({ location: { lat, lng }, language: 'tr' }, (results, status) => {
-        btn.classList.remove('loading');
-        btn.textContent = '📍';
-
-        if (status === 'OK' && results[0]) {
-          // En anlamlı sonucu bul (ilçe/şehir seviyesi)
-          const result = results.find(r =>
-            r.types.includes('locality') ||
-            r.types.includes('administrative_area_level_2') ||
-            r.types.includes('administrative_area_level_1')
-          ) || results[0];
-
-          originInput.value = result.formatted_address;
-          // Haritayı konuma odakla
-          if (map) {
-            map.setCenter({ lat, lng });
-            map.setZoom(12);
-          }
-          // Yeşil renk — konum alındı
-          btn.style.borderColor = 'var(--success)';
-          btn.textContent = '✅';
-          setTimeout(() => {
-            btn.textContent = '📍';
-            btn.style.borderColor = '';
-          }, 2000);
-        } else {
-          errorBox.textContent = 'Adresiniz bulunamadı. Lütfen manuel girin.';
-          errorBox.classList.add('visible');
-        }
-      });
+    async pos => {
+      const lat = pos.coords.latitude, lng = pos.coords.longitude;
+      _userBias = { center: { lat, lng }, radius: 50000 };
+      const label = await describeLocation(lat, lng);
+      done();
+      originInput.value = label;
+      _sel.origin = { text: label, lat, lng };
+      document.getElementById('destination').focus();
     },
-    (error) => {
-      btn.classList.remove('loading');
-      btn.textContent = '📍';
-      const msgs = {
-        1: 'Konum iznini reddettiniz. Tarayıcı ayarlarından izin verin.',
-        2: 'Konumunuz belirlenemedi.',
-        3: 'Konum isteği zaman aşımına uğradı.',
-      };
-      errorBox.textContent = msgs[error.code] || 'Konum alınamadı.';
-      errorBox.classList.add('visible');
+    err => {
+      done();
+      if (err.code === 1) setHint('Konum izni verilmedi. Adres çubuğundaki kilit/konum simgesinden izin verebilir ya da yeri elle yazabilirsiniz.');
+      else if (err.code === 3) setHint('Konum alınamadı (zaman aşımı). Tekrar deneyin veya yeri elle yazın.');
+      else setHint('Konumunuz belirlenemedi. Yeri elle yazabilirsiniz.');
     },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
   );
 }
+
+function initLocationBtn() {
+  const btn = document.getElementById('locationBtn');
+  if (!btn) return;
+  btn.style.display = navigator.geolocation ? 'flex' : 'none';
+}
+
+// Harita anahtarı/kısıtlama hatasında Google'ın kendi uyarısına ek olarak sade mesaj
+window.gm_authFailure = () => {
+  console.error('Google Maps kimlik doğrulama hatası: API anahtarı kısıtlamalarını kontrol edin.');
+  setHint('Harita servisi şu an yüklenemedi. Lütfen biraz sonra tekrar deneyin.');
+};
 
 // ═══════════════════════════════════════════════
 // GOOGLE MAPS INIT
 // ═══════════════════════════════════════════════
-function initMap() {
-  // ── PLACES AUTOCOMPLETE — Türkiye odaklı, tüm yer tipleri ──
-  const acOptions = {
-    componentRestrictions: { country: 'tr' },
-    fields: ['formatted_address', 'geometry', 'name', 'place_id', 'address_components'],
-    types: [],  // boş = her tip (şehir, ilçe, mahalle, POI, adres hepsi)
-    language: 'tr',
-    strictBounds: false,
-  };
-
-  originAC = new google.maps.places.Autocomplete(
-    document.getElementById('origin'), acOptions
-  );
-  destAC = new google.maps.places.Autocomplete(
-    document.getElementById('destination'), acOptions
-  );
-
-  // Kullanıcının konumunu bias olarak kullan (önce yakın yerleri göster)
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const userLocation = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-      const circle = new google.maps.Circle({ center: userLocation, radius: 50000 });
-      originAC.setBounds(circle.getBounds());
-      destAC.setBounds(circle.getBounds());
-    }, () => {
-      // İzin verilmezse Türkiye merkezi kullan
-      const turkeyBounds = new google.maps.LatLngBounds(
-        new google.maps.LatLng(36.0, 26.0),
-        new google.maps.LatLng(42.0, 45.0)
-      );
-      originAC.setBounds(turkeyBounds);
-      destAC.setBounds(turkeyBounds);
-    });
-  }
-
-  // Seçim yapılınca input'u güzel formatta doldur
-  originAC.addListener('place_changed', () => {
-    const place = originAC.getPlace();
-    if (place && place.geometry) {
-      const label = formatPlaceLabel(place);
-      document.getElementById('origin').value = label;
-      window._originPlace = place;
-    }
-  });
-  destAC.addListener('place_changed', () => {
-    const place = destAC.getPlace();
-    if (place && place.geometry) {
-      const label = formatPlaceLabel(place);
-      document.getElementById('destination').value = label;
-      window._destPlace = place;
-    }
-  });
-
-  // Enter ile hesapla (autocomplete seçimi dışında)
-  document.getElementById('destination').addEventListener('keydown', e => {
-    if (e.key === 'Enter') setTimeout(() => calculate(), 100);
-  });
-  document.getElementById('origin').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('destination').focus();
-  });
-
+async function initMap() {
+  try { await google.maps.importLibrary('places'); }
+  catch (e) { console.warn('Places kütüphanesi yüklenemedi:', e); }
+  setupAutocomplete('origin');
+  setupAutocomplete('destination');
   fetchFuelPrices();
   initLocationBtn();
-}
-
-// Yer etiketini kısa ve anlamlı formatta döndür
-function formatPlaceLabel(place) {
-  if (!place) return '';
-  const name = place.name || '';
-  const addr = place.formatted_address || '';
-  // Eğer isim zaten adreste varsa sadece adresi döndür
-  if (addr.toLowerCase().includes(name.toLowerCase()) || name.length < 3) {
-    return addr;
-  }
-  // Kısa adres: "Kumluca, Antalya" gibi
-  const parts = addr.split(',').map(s => s.trim()).filter(Boolean);
-  if (parts.length >= 2) {
-    return name + ', ' + parts[parts.length - 2] + (parts.length > 2 ? ', ' + parts[parts.length - 1] : '');
-  }
-  return name || addr;
-}
-
-// ── KONUM BUTONU ──
-function initLocationBtn() {
-  const btn = document.getElementById('locationBtn');
-  if (!btn) return;
-  if (!navigator.geolocation) {
-    btn.style.display = 'none';
-    return;
-  }
-  btn.style.display = 'flex';
-}
-
-function useMyLocation() {
-  const btn = document.getElementById('locationBtn');
-  const originInput = document.getElementById('origin');
-
-  if (!navigator.geolocation) {
-    showError('Tarayıcınız konum özelliğini desteklemiyor.');
-    return;
-  }
-
-  btn.innerHTML = '<span class="loc-spinner"></span>';
-  btn.disabled = true;
-
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const { latitude, longitude } = pos.coords;
-      const geocoder = new google.maps.Geocoder();
-      geocoder.geocode(
-        { location: { lat: latitude, lng: longitude }, language: 'tr', region: 'TR' },
-        (results, status) => {
-          btn.innerHTML = '📍';
-          btn.disabled = false;
-          if (status === 'OK' && results[0]) {
-            // En anlamlı sonucu bul (mahalle/ilçe seviyesi)
-            const best = results.find(r =>
-              r.types.includes('sublocality') ||
-              r.types.includes('neighborhood') ||
-              r.types.includes('locality')
-            ) || results[0];
-            originInput.value = best.formatted_address;
-            window._originPlace = best;
-            // Varış alanına odaklan
-            document.getElementById('destination').focus();
-          } else {
-            showError('Konumunuz belirlenemedi.');
-          }
-        }
-      );
-    },
-    err => {
-      btn.innerHTML = '📍';
-      btn.disabled = false;
-      if (err.code === 1) {
-        showError('Konum izni reddedildi. Tarayıcı ayarlarından izin verin.');
-      } else {
-        showError('Konum alınamadı, lütfen manuel girin.');
-      }
-    },
-    { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
-  );
-}
-
-function showError(msg) {
-  const errorBox = document.getElementById('errorBox');
-  errorBox.textContent = msg;
-  errorBox.classList.add('visible');
-  setTimeout(() => errorBox.classList.remove('visible'), 4000);
 }
 
 // Dark map style
@@ -1664,7 +1704,7 @@ document.getElementById('map').style.display = 'none';
 </script>
 
 <script
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5MyK6yf6rwgblGlPT9G6Z_d6ciDwKINg&libraries=places,geocoder&v=weekly&language=tr&region=TR&callback=initMap"
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA5MyK6yf6rwgblGlPT9G6Z_d6ciDwKINg&libraries=places&v=weekly&language=tr&region=TR&callback=initMap"
   async defer>
 </script>
 
