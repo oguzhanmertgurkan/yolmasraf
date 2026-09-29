@@ -1557,6 +1557,7 @@ function calculate() {
   ].filter(Boolean);
 
   let routeResults = new Array(REQUESTS.length).fill(null);
+  let routeStatuses = [];
   let doneCount = 0;
 
   function onAllDone() {
@@ -1565,7 +1566,10 @@ function calculate() {
 
     const validResults = routeResults.filter(r => r !== null);
     if (validResults.length === 0) {
-      errorBox.textContent = 'Rota bulunamadı. Lütfen adreslerinizi kontrol edin.';
+      const limited = routeStatuses.some(st => st === 'OVER_QUERY_LIMIT' || st === 'OVER_DAILY_LIMIT' || st === 'REQUEST_DENIED' || st === 'UNKNOWN_ERROR');
+      errorBox.textContent = limited
+        ? 'Günlük kullanım sınırına ulaşıldı, lütfen yarın tekrar deneyin.'
+        : 'Rota bulunamadı. Lütfen adreslerinizi kontrol edin.';
       errorBox.classList.add('visible');
       return;
     }
@@ -1642,12 +1646,29 @@ function calculate() {
     renderRoute(0);
   }
 
+  // Aynı rota tekrar hesaplanırsa Google'a yeniden sormayız (kota tasarrufu)
+  const cacheKey = JSON.stringify(REQUESTS.map(r => r.req));
+  window._routeCache = window._routeCache || new Map();
+  const cached = window._routeCache.get(cacheKey);
+  if (cached) {
+    routeResults = cached;
+    onAllDone();
+    return;
+  }
+
   // Paralel istekler
   REQUESTS.forEach((item, i) => {
     service.route(item.req, (res, status) => {
+      routeStatuses[i] = status;
       if (status === 'OK') routeResults[i] = res;
       doneCount++;
-      if (doneCount === REQUESTS.length) onAllDone();
+      if (doneCount === REQUESTS.length) {
+        if (routeResults.some(r => r !== null)) {
+          if (window._routeCache.size >= 20) window._routeCache.delete(window._routeCache.keys().next().value);
+          window._routeCache.set(cacheKey, routeResults);
+        }
+        onAllDone();
+      }
     });
   });
 }
@@ -1930,15 +1951,20 @@ function setupAutocomplete(kind) {
     list.classList.add('open');
   };
 
+  const acCache = new Map(); // aynı yazı tekrar aranmasın
   const query = async (q) => {
     const mine = ++seq;
+    const ck = q.toLocaleLowerCase('tr');
+    if (acCache.has(ck)) { render(acCache.get(ck)); return; }
     try {
       if (!_sessionToken) _sessionToken = new google.maps.places.AutocompleteSessionToken();
       const req = { input: q, includedRegionCodes: ['tr'], language: 'tr', region: 'tr', sessionToken: _sessionToken };
       if (_userBias) req.locationBias = _userBias;
       const res = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(req);
       if (mine !== seq) return;
-      render((res.suggestions || []).filter(s => s.placePrediction));
+      const sugg = (res.suggestions || []).filter(s => s.placePrediction);
+      acCache.set(ck, sugg);
+      render(sugg);
     } catch (err) {
       if (mine !== seq) return;
       console.warn('Yer önerileri alınamadı:', err);
@@ -1950,8 +1976,8 @@ function setupAutocomplete(kind) {
     _sel[kind] = null;
     clearTimeout(timer);
     const q = input.value.trim();
-    if (q.length < 2) { seq++; close(); return; }
-    timer = setTimeout(() => query(q), 220);
+    if (q.length < 3) { seq++; close(); return; }
+    timer = setTimeout(() => query(q), 450);
   });
 
   // Nereden alanı boşken "Mevcut konumum" seçeneği göster
