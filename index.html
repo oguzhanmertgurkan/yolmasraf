@@ -1054,6 +1054,45 @@ function haversineKm(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+// İstanbul–İzmir otoyolu ara çıkışları (Gebze girişinden itibaren, 1. sınıf, 2026 tarifesi)
+// Ücretler: otoyolas.com.tr + yolcu360.com + sigortam.net verilerine göre ölçeklenmiş TAHMİNLERDİR.
+// lat/lng: yaklaşık çıkış konumları — rotanın hangi çıkışa kadar otoyolu kullandığını anlamak için (±10 km tolerans).
+const IST_IZM_EXITS = [
+  { name: 'Orhangazi / Yalova',           car: 1170, moto: 820,  lat: 40.49, lng: 29.29 },
+  { name: 'Gemlik',                       car: 1390, moto: 975,  lat: 40.44, lng: 29.13 },
+  { name: 'Bursa Kuzey',                  car: 1645, moto: 1150, lat: 40.29, lng: 29.07 },
+  { name: 'Bursa Batı',                   car: 1730, moto: 1210, lat: 40.22, lng: 28.90 },
+  { name: 'Karacabey / Mustafakemalpaşa', car: 1855, moto: 1300, lat: 40.22, lng: 28.36 },
+  { name: 'Susurluk',                     car: 1965, moto: 1380, lat: 39.92, lng: 28.15 },
+  { name: 'Balıkesir Kuzey',              car: 2085, moto: 1465, lat: 39.72, lng: 27.95 },
+  { name: 'Balıkesir Batı',               car: 2160, moto: 1515, lat: 39.62, lng: 27.80 },
+  { name: 'Soma / Savaştepe',             car: 2265, moto: 1590, lat: 39.28, lng: 27.63 },
+  { name: 'Kırkağaç',                     car: 2325, moto: 1630, lat: 39.10, lng: 27.67 },
+  { name: 'Akhisar',                      car: 2400, moto: 1685, lat: 38.93, lng: 27.82 },
+  { name: 'Saruhanlı',                    car: 2460, moto: 1725, lat: 38.73, lng: 27.57 },
+  { name: 'Manisa / Turgutlu',            car: 2515, moto: 1765, lat: 38.55, lng: 27.60 },
+  { name: 'İzmir (tam parkur)',           car: 2640, moto: 1950, lat: 38.43, lng: 27.24 },
+];
+
+// Rota İstanbul–İzmir otoyoluna giriyorsa, rotanın ulaştığı EN UZAK çıkışa göre ücreti hesapla
+// (ör. İstanbul→Bursa = Bursa Kuzey çıkışı ~1.645 ₺; tam 2.640 ₺ değil).
+function resolveIstIzm(gate, routePoints) {
+  let best = 0;
+  IST_IZM_EXITS.forEach((e, i) => {
+    if (routePoints.some(p => haversineKm(e.lat, e.lng, p.lat, p.lng) < 10)) best = i;
+  });
+  const ex = IST_IZM_EXITS[best];
+  const full = IST_IZM_EXITS[IST_IZM_EXITS.length - 1];
+  if (ex === full) return gate;
+  const ratio = ex.car / full.car;
+  const fees = {};
+  Object.keys(gate.fees).forEach(k => {
+    fees[k] = k === 'motorcycle' ? ex.moto : Math.round(gate.fees[k] * ratio);
+  });
+  return { ...gate, fees, exit: ex, partial: true,
+    name: `İstanbul–İzmir Otoyolu (Osmangazi dahil, ${ex.name} çıkışına kadar)` };
+}
+
 function detectTolls(routePoints) {
   const THRESHOLD_KM = 2.5;
   const detected = [];
@@ -1062,7 +1101,7 @@ function detectTolls(routePoints) {
     const isOnRoute = routePoints.some(p =>
       haversineKm(gate.lat, gate.lng, p.lat, p.lng) < THRESHOLD_KM
     );
-    if (isOnRoute) detected.push(gate);
+    if (isOnRoute) detected.push(gate.id === 'ist_izm_full' ? resolveIstIzm(gate, routePoints) : gate);
   }
   const seen = new Set();
   return detected.filter(g => { if (seen.has(g.id)) return false; seen.add(g.id); return true; });
@@ -1340,25 +1379,6 @@ function calculate() {
       marker.addListener('click', () => {
         const isFullPackage = t.id === 'ist_izm_full';
 
-        // İst-İzm ara çıkış tablosu (Osmangazi dahil, otomobil 1.sınıf, 2026 tarifesi)
-        // Kaynak: otoyolas.com.tr + yolcu360.com + sigortam.net 2026 verileri
-        const IST_IZM_EXITS = [
-          { name: 'Orhangazi / Yalova', car: 1170, moto: 820  },
-          { name: 'Gemlik',             car: 1390, moto: 975  },
-          { name: 'Bursa Kuzey',        car: 1645, moto: 1150 },
-          { name: 'Bursa Batı',         car: 1730, moto: 1210 },
-          { name: 'Karacabey / Mustafakemalpaşa', car: 1855, moto: 1300 },
-          { name: 'Susurluk',           car: 1965, moto: 1380 },
-          { name: 'Balıkesir Kuzey',    car: 2085, moto: 1465 },
-          { name: 'Balıkesir Batı',     car: 2160, moto: 1515 },
-          { name: 'Soma / Savaştepe',   car: 2265, moto: 1590 },
-          { name: 'Kırkağaç',          car: 2325, moto: 1630 },
-          { name: 'Akhisar',            car: 2400, moto: 1685 },
-          { name: 'Saruhanlı',          car: 2460, moto: 1725 },
-          { name: 'Manisa / Turgutlu',  car: 2515, moto: 1765 },
-          { name: 'İzmir (tam parkur)', car: 2640, moto: 1950 },
-        ];
-
         const araExitsHtml = isFullPackage ? `
           <details style="margin-top:10px;">
             <summary style="cursor:pointer;font-size:0.8rem;color:#c07800;font-weight:600;padding:4px 0;">
@@ -1371,8 +1391,8 @@ function calculate() {
                 <th style="text-align:right;padding:3px 0;color:#888;font-weight:500;">Motosiklet</th>
               </tr>
               ${IST_IZM_EXITS.map(e => `
-                <tr style="border-bottom:1px solid #f5f5f5;">
-                  <td style="padding:3px 0;color:#444">${e.name}</td>
+                <tr style="border-bottom:1px solid #f5f5f5;${t.exit === e ? 'background:#fff8e6;' : ''}">
+                  <td style="padding:3px 0;color:#444">${t.exit === e ? '▶ ' : ''}${e.name}</td>
                   <td style="text-align:right;font-weight:600;color:#333">${e.car.toLocaleString('tr-TR')} ₺</td>
                   <td style="text-align:right;color:#666">${e.moto.toLocaleString('tr-TR')} ₺</td>
                 </tr>`).join('')}
@@ -1383,7 +1403,7 @@ function calculate() {
         const content = `
           <div style="font-family:Inter,sans-serif;padding:4px 2px;min-width:240px;max-width:300px;">
             <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;color:#1a1a1a">🛣️ ${t.name}</div>
-            ${isFullPackage ? `<div style="font-size:0.75rem;color:#c07800;margin-bottom:8px;background:#fff8e6;padding:4px 8px;border-radius:6px;">📦 Tam parkur paketi — Osmangazi Köprüsü dahil tüm gişeler</div>` : ''}
+            ${isFullPackage ? `<div style="font-size:0.75rem;color:#c07800;margin-bottom:8px;background:#fff8e6;padding:4px 8px;border-radius:6px;">${t.partial ? `📦 Tahmini ücret — Gebze girişinden <b>${t.exit.name}</b> çıkışına kadar (Osmangazi dahil)` : '📦 Tam parkur paketi — Osmangazi Köprüsü dahil tüm gişeler'}</div>` : ''}
             <table style="width:100%;border-collapse:collapse;font-size:0.82rem;color:#444">
               <tr><td style="padding:3px 0;color:#666">Binek / SUV</td><td style="text-align:right;font-weight:600">${t.fees.car.toLocaleString('tr-TR')} ₺</td></tr>
               <tr><td style="padding:3px 0;color:#666">Minibüs</td><td style="text-align:right;font-weight:600">${t.fees.minibus.toLocaleString('tr-TR')} ₺</td></tr>
@@ -1591,18 +1611,38 @@ function calculate() {
 // ELEKTRİKLİ ARAÇ — Rota üzerindeki şarj istasyonları
 // İstasyon verisi: /api/ev (Open Charge Map). Ücretler: operatör tarifeleri (aşağıda, elle güncellenir)
 // ═══════════════════════════════════════════════
-// Kaynaklar: trugo.com.tr/price (resmi); araclo.com (ZES, Eşarj, Sharz, Elaris — 17 Eyl 2026);
-// old:true olanlar Şubat–Nisan 2026 tarihli, teyit edilmemiş değerlerdir.
+// Kaynaklar: trugo.com.tr/price (resmi) ve araclo.com (25 operatör, 17 Eyl 2026 — siteler kendi sayfalarından otomatik toplanmış).
+// old:true olanlar Şubat–Nisan 2026 tarihli, teyit edilmemiş değerlerdir. Güncellemek için bu listeyi değiştirin.
 const EV_TARIFFS = [
-  { re: /\b(trugo|togg)\b/,            name: 'Trugo',          ac: [9.95, 9.95],  dc: [14.98, 14.98] },
-  { re: /\bzes\b/,                     name: 'ZES',            ac: [10.99, 10.99], dc: [12.99, 16.49] },
-  { re: /\b(esarj|e-sarj)\b/,          name: 'Eşarj',          ac: [9.90, 9.90],  dc: [9.90, 14.90] },
-  { re: /\bsharz\b/,                   name: 'Sharz',          ac: [9.49, 9.49],  dc: [11.99, 11.99] },
-  { re: /\belaris\b/,                  name: 'Elaris',         ac: [8.49, 9.49],  dc: [10.00, 10.00] },
-  { re: /\bshell\b/,                   name: 'Shell Recharge', ac: [11.99, 11.99], dc: [12.99, 15.99], old: true },
-  { re: /\b(e-power|epower)\b/,        name: 'E-Power',        ac: [8.49, 8.99],  dc: [10.99, 11.99], old: true },
-  { re: /\bvoltrun\b/,                 name: 'Voltrun',        ac: [9.90, 10.90], dc: [12.90, 13.90], old: true },
-  { re: /\btesla\b/,                   name: 'Tesla',          ac: null,          dc: [9.40, 13.00],  old: true, note: 'Tesla sahiplerine daha düşük' },
+  { re: /\b(trugo|togg)\b/,        name: 'Trugo',            ac: [9.95, 9.95],   dc: [14.98, 14.98] },
+  { re: /\bzes\b/,                 name: 'ZES',              ac: [10.99, 10.99], dc: [12.99, 16.49] },
+  { re: /\b(esarj|e-sarj)\b/,      name: 'Eşarj',            ac: [9.90, 9.90],   dc: [9.90, 14.90] },
+  { re: /\bsharz\b/,               name: 'Sharz',            ac: [9.49, 9.49],   dc: [11.99, 11.99] },
+  { re: /\belaris\b/,              name: 'Elaris',           ac: [8.49, 9.49],   dc: [10.00, 10.00] },
+  { re: /\b5 ?sarj\b/,             name: '5Şarj',            ac: [8.99, 8.99],   dc: [15.90, 15.90] },
+  { re: /\baksa\b/,                name: 'Aksa Şarj',        ac: [9.90, 10.90],  dc: [11.99, 13.99] },
+  { re: /\bastor\b/,               name: 'Astor Şarj',       ac: [9.89, 9.89],   dc: [13.99, 13.99] },
+  { re: /\bbeefull\b/,             name: 'Beefull',          ac: [9.90, 9.90],   dc: [13.99, 13.99] },
+  { re: /\bcv charging\b/,         name: 'CV Charging',      ac: [9.99, 9.99],   dc: [13.49, 13.49] },
+  { re: /\benyakit\b/,             name: 'Enyakıt',          ac: null,           dc: [14.90, 14.90] },
+  { re: /\bev-?bee\b/,             name: 'EV-Bee',           ac: [9.95, 9.95],   dc: [14.98, 14.98] },
+  { re: /\bgio\b/,                 name: 'GIO EV',           ac: null,           dc: [10.99, 13.73] },
+  { re: /\blumicle\b/,             name: 'Lumicle',          ac: [9.99, 9.99],   dc: [13.49, 13.49] },
+  { re: /\bon ?charge\b/,          name: 'Oncharge',         ac: [9.99, 9.99],   dc: [13.50, 13.50] },
+  { re: /\boto-? ?jet\b/,          name: 'Oto-Jet',          ac: [10.99, 10.99], dc: [12.40, 15.49] },
+  { re: /\botopriz\b/,             name: 'Otopriz',          ac: [9.90, 9.90],   dc: [13.90, 13.90] },
+  { re: /\bpower sarj\b/,          name: 'Power Şarj',       ac: [11.19, 11.19], dc: [13.99, 13.99] },
+  { re: /\brst\b/,                 name: 'RST Charge Point', ac: [5.90, 5.90],   dc: [13.99, 13.99] },
+  { re: /\bsarjon\b/,              name: 'Sarjon',           ac: [10.99, 10.99], dc: [11.99, 13.99] },
+  { re: /\btoger\b/,               name: 'Toger',            ac: [9.90, 9.90],   dc: [13.39, 13.39] },
+  { re: /\btora\b/,                name: 'Tora Şarj',        ac: [9.99, 9.99],   dc: [13.49, 13.49] },
+  { re: /\bvolti\b/,               name: 'Volti',            ac: [9.99, 9.99],   dc: [12.99, 12.99] },
+  { re: /\bvoltrun\b/,             name: 'Voltrun',          ac: [9.90, 9.90],   dc: [12.90, 12.90] },
+  { re: /\bwat\b/,                 name: 'WAT Mobilite',     ac: [9.99, 10.99],  dc: [10.99, 14.49] },
+  // Aşağıdakiler araclo listesinde yok; Şubat–Nisan 2026 tarihli, teyit edilmemiş değerler:
+  { re: /\bshell\b/,               name: 'Shell Recharge',   ac: [11.99, 11.99], dc: [12.99, 15.99], old: true },
+  { re: /\b(e-power|epower)\b/,    name: 'E-Power',          ac: [8.49, 8.99],   dc: [10.99, 11.99], old: true },
+  { re: /\btesla\b/,               name: 'Tesla',            ac: null,           dc: [9.40, 13.00],  old: true, note: 'Tesla sahiplerine daha düşük' },
 ];
 function normTR(s) {
   return String(s || '').toLocaleLowerCase('tr').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c')
