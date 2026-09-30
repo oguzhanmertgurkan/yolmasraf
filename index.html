@@ -3,18 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#131a21" />
+  <meta name="theme-color" content="#0e1116" />
   <title>YolMasraf — Türkiye Yol Masrafı Hesaplayıcı</title>
   <script>
   (function () {
-    var t = null;
-    try { t = localStorage.getItem('ym-theme'); } catch (e) {}
+    var t = null, k = null;
+    try { t = localStorage.getItem('ym-theme'); k = localStorage.getItem('ym-skin'); } catch (e) {}
     if (t !== 'light' && t !== 'dark') {
       t = (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
     }
-    document.documentElement.setAttribute('data-theme', t);
+    if (k !== 'clean' && k !== 'yol') k = 'clean';
+    var r = document.documentElement;
+    r.setAttribute('data-theme', t);
+    r.setAttribute('data-skin', k);
+    var C = { 'clean-light': '#f8fafc', 'clean-dark': '#0e1116', 'yol-light': '#f7f5f2', 'yol-dark': '#0f172a' };
     var m = document.querySelector('meta[name="theme-color"]');
-    if (m) m.setAttribute('content', t === 'light' ? '#f3efe8' : '#131a21');
+    if (m) m.setAttribute('content', C[k + '-' + t]);
   })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -23,58 +27,150 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── TEMA SİSTEMİ: 2 görünüm (Clean / Yol) × açık / koyu ──
+       Renkler yalnızca burada tanımlı; geri kalan her yer var(--…) kullanır. */
     :root {
-      --bg:        #131a21;
-      --surface:   #1a232c;
-      --surface2:  #212c37;
-      --border:    #2f3c49;
-      --accent:    #dcb87a;
-      --accent2:   #ecd3a2;
-      --text:      #e7ebef;
-      --muted:     #93a1af;
-      --success:   var(--success);
-      --red:       #e59a9a;
-      --blue:      #86b3e6;
-      --violet:    #b4a4e6;
       --radius:    18px;
       --font-head: 'Figtree', system-ui, sans-serif;
       --font-body: 'Figtree', system-ui, sans-serif;
-      --warn:      #fbbf77;
-      --on-accent: #131a21;
-      --overlay:   rgba(19,26,33,0.7);
-      --ferry-fg:  #a9c8ee;
-      --ferry-fg2: #cfe0f5;
-      --ferry-bg:  rgba(59,130,246,0.12);
-      --ferry-bd:  rgba(59,130,246,0.5);
-      --sb:        #3b4957;
-      --sb-h:      #55677a;
-      --k-best: #dcb87a; --k-fast: #dcb87a; --k-cheap: var(--success); --k-free: #b4a4e6; --k-ferry: #86b3e6; --k-alt: #93a1af;
+
+      /* Clean · koyu (varsayılan) */
+      --bg:        #0e1116;
+      --surface:   #161b22;
+      --surface2:  #1e252e;
+      --border:    #2a323d;
+      --accent:    #60a5fa;
+      --accent2:   #93c5fd;
+      --accent-vivid: #3b82f6;
+      --accent-rgb:  96,165,250;
+      --text:      #e6edf7;
+      --muted:     #8b9bb4;
+      --muted-rgb: 139,155,180;
+      --success:   #4ade80;
+      --success-rgb: 74,222,128;
+      --red:       #f87171;
+      --blue:      #7dd3fc;
+      --blue-rgb:  125,211,252;
+      --violet:    #a78bfa;
+      --violet-rgb: 167,139,250;
+      --warn:      #fbbf24;
+      --on-accent: #0b1220;
+      --overlay:   rgba(14,17,22,0.7);
+      --ferry-fg:  #67e8f9;
+      --ferry-fg2: #a5f3fc;
+      --ferry-bg:  rgba(34,211,238,0.10);
+      --ferry-bd:  rgba(34,211,238,0.45);
+      --sb:        #334155;
+      --sb-h:      #475569;
+      --k-best: #60a5fa; --k-fast: #60a5fa; --k-cheap: #4ade80; --k-free: #a78bfa; --k-ferry: #67e8f9; --k-alt: #8b9bb4;
+      --hero-a: transparent; --hero-b: transparent; --road-line: transparent;
+      --pop-accent: #1d4ed8; --pop-tint: #eff6ff;
+      --map-land: #151a21; --map-nature: #151a21; --map-text: #8b9bb4; --map-stroke: #0e1116;
+      --map-road: #232b35; --map-hwy: #33445a; --map-hwylabel: #93c5fd; --map-water: #0a0e13; --map-admin: #2a323d;
       color-scheme: dark;
     }
+    /* Clean · açık */
     :root[data-theme="light"] {
-      --bg:        #f3efe8;
-      --surface:   #fbf9f5;
-      --surface2:  #f0ebe2;
-      --border:    #ddd5c7;
-      --accent:    #9a6b1c;
-      --accent2:   #7a5212;
-      --text:      #222a33;
-      --muted:     #66727f;
-      --success:   #1f8068;
-      --red:       #c0504f;
-      --blue:      #2c69ad;
-      --violet:    #6b52c2;
-      --warn:      #a15c00;
+      --bg:        #f8fafc;
+      --surface:   #ffffff;
+      --surface2:  #f1f5f9;
+      --border:    #e2e8f0;
+      --accent:    #2563eb;
+      --accent2:   #1d4ed8;
+      --accent-vivid: #3b82f6;
+      --accent-rgb:  37,99,235;
+      --text:      #0f172a;
+      --muted:     #64748b;
+      --muted-rgb: 100,116,139;
+      --success:   #15803d;
+      --success-rgb: 21,128,61;
+      --red:       #dc2626;
+      --blue:      #0369a1;
+      --blue-rgb:  3,105,161;
+      --violet:    #7c3aed;
+      --violet-rgb: 124,58,237;
+      --warn:      #b45309;
       --on-accent: #ffffff;
-      --overlay:   rgba(243,239,232,0.78);
-      --ferry-fg:  #1f4f88;
-      --ferry-fg2: #163b66;
-      --ferry-bg:  rgba(44,105,173,0.09);
-      --ferry-bd:  rgba(44,105,173,0.4);
-      --sb:        #cfc6b5;
-      --sb-h:      #b3a891;
-      --k-best: #a5731e; --k-fast: #a5731e; --k-cheap: #1f8068; --k-free: #6b52c2; --k-ferry: #2c69ad; --k-alt: #7a8794;
+      --overlay:   rgba(248,250,252,0.78);
+      --ferry-fg:  #0e7490;
+      --ferry-fg2: #155e75;
+      --ferry-bg:  rgba(14,116,144,0.09);
+      --ferry-bd:  rgba(14,116,144,0.4);
+      --sb:        #cbd5e1;
+      --sb-h:      #94a3b8;
+      --k-best: #2563eb; --k-fast: #2563eb; --k-cheap: #15803d; --k-free: #7c3aed; --k-ferry: #0e7490; --k-alt: #94a3b8;
+      --map-land: #eef2f6; --map-nature: #e4ebe0; --map-text: #64748b; --map-stroke: #ffffff;
+      --map-road: #ffffff; --map-hwy: #cfe0fb; --map-hwylabel: #1d4ed8; --map-water: #bcd7ee; --map-admin: #cbd5e1;
       color-scheme: light;
+    }
+    /* Yol (Road Trip) · koyu */
+    :root[data-skin="yol"] {
+      --bg:        #0f172a;
+      --surface:   #172033;
+      --surface2:  #1e293b;
+      --border:    #2b3a52;
+      --accent:    #fb923c;
+      --accent2:   #fdba74;
+      --accent-vivid: #f97316;
+      --accent-rgb:  251,146,60;
+      --text:      #f1f5f9;
+      --muted:     #94a3b8;
+      --muted-rgb: 148,163,184;
+      --success:   #4ade80;
+      --success-rgb: 74,222,128;
+      --red:       #f87171;
+      --blue:      #60a5fa;
+      --blue-rgb:  96,165,250;
+      --violet:    #a78bfa;
+      --violet-rgb: 167,139,250;
+      --warn:      #fbbf24;
+      --on-accent: #0f172a;
+      --overlay:   rgba(15,23,42,0.7);
+      --ferry-fg:  #93c5fd;
+      --ferry-fg2: #bfdbfe;
+      --ferry-bg:  rgba(59,130,246,0.14);
+      --ferry-bd:  rgba(96,165,250,0.5);
+      --sb:        #334155;
+      --sb-h:      #475569;
+      --k-best: #fb923c; --k-fast: #fb923c; --k-cheap: #4ade80; --k-free: #a78bfa; --k-ferry: #60a5fa; --k-alt: #94a3b8;
+      --hero-a: #1e293b; --hero-b: #3a2416; --road-line: rgba(251,146,60,0.55);
+      --pop-accent: #9a3412; --pop-tint: #fff1e6;
+      --map-land: #172033; --map-nature: #172033; --map-text: #94a3b8; --map-stroke: #0f172a;
+      --map-road: #26334a; --map-hwy: #3a4a66; --map-hwylabel: #fdba74; --map-water: #0b1220; --map-admin: #2b3a52;
+    }
+    /* Yol (Road Trip) · açık */
+    :root[data-skin="yol"][data-theme="light"] {
+      --bg:        #f7f5f2;
+      --surface:   #ffffff;
+      --surface2:  #f3efe9;
+      --border:    #e7e0d6;
+      --accent:    #c2410c;
+      --accent2:   #9a3412;
+      --accent-vivid: #f97316;
+      --accent-rgb:  194,65,12;
+      --text:      #1c1917;
+      --muted:     #78716c;
+      --muted-rgb: 120,113,108;
+      --success:   #15803d;
+      --success-rgb: 21,128,61;
+      --red:       #dc2626;
+      --blue:      #1d4ed8;
+      --blue-rgb:  29,78,216;
+      --violet:    #7c3aed;
+      --violet-rgb: 124,58,237;
+      --warn:      #b45309;
+      --on-accent: #ffffff;
+      --overlay:   rgba(247,245,242,0.78);
+      --ferry-fg:  #1e40af;
+      --ferry-fg2: #1e3a8a;
+      --ferry-bg:  rgba(37,99,235,0.09);
+      --ferry-bd:  rgba(37,99,235,0.4);
+      --sb:        #d6cfc4;
+      --sb-h:      #b8ae9f;
+      --k-best: #c2410c; --k-fast: #c2410c; --k-cheap: #15803d; --k-free: #7c3aed; --k-ferry: #1d4ed8; --k-alt: #a8a29e;
+      --hero-a: #fff6ee; --hero-b: #ffdfc2; --road-line: rgba(194,65,12,0.45);
+      --map-land: #efebe4; --map-nature: #e4e8d4; --map-text: #6b6259; --map-stroke: #faf8f4;
+      --map-road: #ffffff; --map-hwy: #fcd9b0; --map-hwylabel: #9a3412; --map-water: #b7d3e8; --map-admin: #d9d0c2;
     }
 
     * { scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
@@ -115,7 +211,7 @@
       letter-spacing: -0.3px;
       display: flex; align-items: center; gap: 10px;
     }
-    .logo-mark { width: 34px; height: 34px; border-radius: 11px; background: rgba(220,184,122,0.14); color: var(--accent); display: flex; align-items: center; justify-content: center; }
+    .logo-mark { width: 34px; height: 34px; border-radius: 11px; background: rgba(var(--accent-rgb),0.14); color: var(--accent); display: flex; align-items: center; justify-content: center; }
     .logo-mark .i { width: 20px; height: 20px; }
     .logo span { color: var(--accent); }
     .fuel-badge {
@@ -209,7 +305,7 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    .pac-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(220,184,122,0.14); }
+    .pac-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb),0.14); }
     .pac-input::placeholder { color: var(--muted); }
 
     /* vehicle */
@@ -241,7 +337,7 @@
     .vehicle-btn:hover { border-color: var(--accent); color: var(--text); }
     .vehicle-btn.active {
       border-color: var(--accent);
-      background: rgba(220,184,122,0.1);
+      background: rgba(var(--accent-rgb),0.1);
       color: var(--accent);
     }
     .vehicle-btn .label { font-size: 0.76rem; font-weight: 600; }
@@ -290,7 +386,7 @@
       font-size: 0.88rem;
       outline: none;
     }
-    input[type=number]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(220,184,122,0.14); }
+    input[type=number]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb),0.14); }
 
     /* passengers */
     .pass-row {
@@ -348,8 +444,8 @@
     }
 
     .result-hero {
-      background: linear-gradient(160deg, rgba(220,184,122,0.12), rgba(220,184,122,0.03));
-      border: 1px solid rgba(220,184,122,0.22);
+      background: linear-gradient(160deg, rgba(var(--accent-rgb),0.12), rgba(var(--accent-rgb),0.03));
+      border: 1px solid rgba(var(--accent-rgb),0.22);
       border-radius: var(--radius);
       padding: 20px;
       text-align: center;
@@ -380,7 +476,7 @@
       padding: 13px 16px;
     }
     .breakdown-left { display: flex; align-items: center; gap: 10px; }
-    .breakdown-icon { display: flex; width: 34px; height: 34px; border-radius: 11px; background: rgba(220,184,122,0.10); color: var(--accent); align-items: center; justify-content: center; }
+    .breakdown-icon { display: flex; width: 34px; height: 34px; border-radius: 11px; background: rgba(var(--accent-rgb),0.10); color: var(--accent); align-items: center; justify-content: center; }
     .breakdown-icon .i { width: 19px; height: 19px; }
     .ic-label { display: flex; align-items: center; gap: 6px; }
     .ic-label .i { color: var(--accent); }
@@ -587,13 +683,13 @@
     .route-tab:hover { border-color: var(--accent); color: var(--text); }
     .route-tab.active {
       border-color: var(--accent);
-      background: rgba(220,184,122,0.12);
+      background: rgba(var(--accent-rgb),0.12);
       color: var(--accent);
     }
     .route-tab.cheapest { border-color: var(--success); }
     .route-tab.cheapest.active {
       border-color: var(--success);
-      background: rgba(120,205,176,0.18);
+      background: rgba(var(--success-rgb),0.18);
       color: var(--success);
     }
     .route-badge {
@@ -604,13 +700,13 @@
       margin-bottom: 3px;
       font-weight: 700;
     }
-    .badge-fast  { background: rgba(220,184,122,0.2);  color: var(--accent); }
-    .badge-cheap { background: rgba(120,205,176,0.2);  color: var(--success); }
-    .badge-ferry { background: rgba(134,179,230,0.2);  color: var(--blue); }
-    .badge-free  { background: rgba(180,164,230,0.2); color: var(--violet); }
-    .badge-alt   { background: rgba(147,161,175,0.2); color: var(--muted); }
+    .badge-fast  { background: rgba(var(--accent-rgb),0.2);  color: var(--accent); }
+    .badge-cheap { background: rgba(var(--success-rgb),0.2);  color: var(--success); }
+    .badge-ferry { background: rgba(var(--blue-rgb),0.2);  color: var(--blue); }
+    .badge-free  { background: rgba(var(--violet-rgb),0.2); color: var(--violet); }
+    .badge-alt   { background: rgba(var(--muted-rgb),0.2); color: var(--muted); }
     .route-tab.ferry-tab { border-color: var(--blue); }
-    .route-tab.ferry-tab.active { background: rgba(134,179,230,0.12); color: var(--blue); }
+    .route-tab.ferry-tab.active { background: rgba(var(--blue-rgb),0.12); color: var(--blue); }
     .route-tab-km    { font-size: 0.72rem; color: var(--muted); margin-top: 2px; font-weight: 400; }
     .route-tab-price { font-size: 0.92rem; font-weight: 700; margin-top: 2px; }
 
@@ -627,7 +723,7 @@
       display: flex; align-items: center; justify-content: center;
       transition: border-color 0.15s, background 0.15s;
     }
-    .location-btn:hover { border-color: var(--accent); background: rgba(220,184,122,0.1); }
+    .location-btn:hover { border-color: var(--accent); background: rgba(var(--accent-rgb),0.1); }
     .location-btn.loading { animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
@@ -640,13 +736,37 @@
     .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
     .theme-btn .i { width: 19px; height: 19px; }
     :root[data-theme="dark"] .theme-btn .moon, :root[data-theme="light"] .theme-btn .sun { display: none; }
+    .hdr-tools { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .skin-seg { display: flex; gap: 2px; padding: 3px; background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; }
+    .skin-seg button {
+      border: 0; background: transparent; color: var(--muted); font-family: inherit; font-size: 0.78rem; font-weight: 700;
+      padding: 6px 13px; border-radius: 999px; cursor: pointer; transition: background 0.15s, color 0.15s;
+    }
+    .skin-seg button:hover { color: var(--text); }
+    .skin-seg button.on { background: var(--accent); color: var(--on-accent); }
+
+    /* Yol görünümü: gradyan başlık + kesik çizgili yol çizimi */
+    .panel-head { position: relative; }
+    .panel-head .road-art { display: none; }
+    .panel-head .panel-title, .panel-head .panel-sub { position: relative; z-index: 1; }
+    :root[data-skin="yol"] .panel-head {
+      background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 18px 20px; overflow: hidden;
+    }
+    :root[data-skin="yol"] .panel-head .panel-title { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.2px; }
+    :root[data-skin="yol"] .panel-head .panel-sub { max-width: 60%; line-height: 1.45; }
+    :root[data-skin="yol"] .panel-head .road-art { display: block; position: absolute; right: 4px; bottom: 2px; width: 44%; height: 84%; pointer-events: none; }
+    .road-art path { fill: none; stroke: var(--road-line); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 2 9; }
+    .road-art .rd-dot { fill: var(--accent-vivid); stroke: none; }
+    .road-art .rd-ring { fill: none; stroke: var(--accent-vivid); stroke-width: 2; }
     #vehicleGrid { grid-template-columns: repeat(6, 1fr); }
     #vehicleGrid .vehicle-btn { grid-column: span 2; }
     #vehicleGrid .vehicle-btn:nth-child(n+4) { grid-column: span 3; }
     .perkm { font-size: 0.8rem; color: var(--text); margin-top: 8px; font-weight: 600; }
     .perkm span { color: var(--muted); font-weight: 500; }
     .flow-done { opacity: 0.5; transition: opacity 0.25s; }
-    .pick-btn.active { border-color: var(--accent); background: rgba(220,184,122,0.16); color: var(--accent); }
+    .pick-btn.active { border-color: var(--accent); background: rgba(var(--accent-rgb),0.16); color: var(--accent); }
     .pick-banner {
       display: none; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 6;
       background: var(--surface); color: var(--text); border: 1px solid var(--accent); border-radius: 999px;
@@ -664,7 +784,7 @@
     @media (max-width: 768px) {
       header { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 12px 16px; }
       .logo { font-size: 1.2rem; }
-      .theme-btn { grid-column: 2; grid-row: 1; }
+      .hdr-tools { grid-column: 2; grid-row: 1; gap: 6px; }
       .fuel-badge { grid-column: 1 / -1; grid-row: 2; width: 100%; justify-content: center; padding: 7px 12px; font-size: 0.74rem; }
       .fuel-items { gap: 6px; flex-wrap: nowrap; }
       .fuel-badge strong { font-size: 0.84rem; }
@@ -680,7 +800,7 @@
       .map-jump {
         display: flex; align-items: center; justify-content: center; gap: 8px;
         width: 100%; padding: 12px; border-radius: 14px; cursor: pointer;
-        background: rgba(120,205,176,0.12); border: 1.5px solid var(--success); color: var(--success);
+        background: rgba(var(--success-rgb),0.12); border: 1.5px solid var(--success); color: var(--success);
         font-family: inherit; font-size: 0.9rem; font-weight: 700;
       }
       #map-container { height: 70vh; min-height: 380px; }
@@ -717,7 +837,7 @@
       background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
       border-radius: 999px; padding: 4px 11px; font-size: 0.72rem; cursor: pointer; font-family: inherit;
     }
-    .ev-chip.active { border-color: var(--success); color: var(--success); background: rgba(120,205,176,0.1); }
+    .ev-chip.active { border-color: var(--success); color: var(--success); background: rgba(var(--success-rgb),0.1); }
     .ev-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
     .ev-item {
       background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
@@ -729,8 +849,8 @@
     .ev-sub { color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
     .ev-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
     .ev-tag { font-size: 0.7rem; padding: 2px 7px; border-radius: 6px; font-weight: 600; }
-    .ev-tag.dc { background: rgba(120,205,176,0.15); color: var(--success); }
-    .ev-tag.ac { background: rgba(134,179,230,0.15); color: var(--blue); }
+    .ev-tag.dc { background: rgba(var(--success-rgb),0.15); color: var(--success); }
+    .ev-tag.ac { background: rgba(var(--blue-rgb),0.15); color: var(--blue); }
     .ev-price { margin-top: 6px; font-size: 0.74rem; color: var(--accent2); }
     .ev-status { font-size: 0.78rem; color: var(--muted); line-height: 1.5; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; }
   </style>
@@ -786,10 +906,16 @@
       <span class="fuel-unit">₺/L</span>
     </div>
   </div>
-  <button type="button" class="theme-btn" id="themeBtn" aria-label="Açık / koyu tema" title="Açık / koyu tema">
-    <svg class="i sun" aria-hidden="true"><use href="#i-sun"/></svg>
-    <svg class="i moon" aria-hidden="true"><use href="#i-moon"/></svg>
-  </button>
+  <div class="hdr-tools">
+    <div class="skin-seg" id="skinSeg" role="group" aria-label="Görünüm">
+      <button type="button" data-skin="clean" aria-pressed="true">Clean</button>
+      <button type="button" data-skin="yol" aria-pressed="false">Yol</button>
+    </div>
+    <button type="button" class="theme-btn" id="themeBtn" aria-label="Açık / koyu tema" title="Açık / koyu tema">
+      <svg class="i sun" aria-hidden="true"><use href="#i-sun"/></svg>
+      <svg class="i moon" aria-hidden="true"><use href="#i-moon"/></svg>
+    </button>
+  </div>
 </header>
 
 <!-- MAIN -->
@@ -797,7 +923,12 @@
 
   <!-- LEFT PANEL -->
   <div class="panel">
-    <div>
+    <div class="panel-head">
+      <svg class="road-art" viewBox="0 0 240 96" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
+        <path d="M14 78 C 58 78, 66 30, 112 46 S 176 88, 222 24"/>
+        <circle class="rd-ring" cx="14" cy="78" r="6"/><circle class="rd-dot" cx="14" cy="78" r="2.6"/>
+        <circle class="rd-dot" cx="222" cy="24" r="6"/>
+      </svg>
       <div class="panel-title">Yol Masrafını Hesapla</div>
       <div class="panel-sub">Türkiye'deki tüm otoyol, köprü ve tünel ücretleri dahil</div>
     </div>
@@ -1462,7 +1593,7 @@ function arrangeRoutes(items) {
   }).sort((a, b) => (rank[a.kind] - rank[b.kind]) || (a.index - b.index));
 }
 
-const KIND_FALLBACK = { best: '#dcb87a', fast: '#dcb87a', cheap: '#78cdb0', free: '#b4a4e6', ferry: '#86b3e6', alt: '#93a1af' };
+const KIND_FALLBACK = { best: '#60a5fa', fast: '#60a5fa', cheap: '#4ade80', free: '#a78bfa', ferry: '#67e8f9', alt: '#8b9bb4' };
 function kindColor(kind) {
   const k = KIND_FALLBACK[kind] ? kind : 'alt';
   try {
@@ -1725,7 +1856,7 @@ function calculate() {
       });
       directionsRenderer.setMap(map);
     }
-    directionsRenderer.setOptions({ polylineOptions: { strokeColor: colors[idx] || '#dcb87a', strokeWeight: 5 } });
+    directionsRenderer.setOptions({ polylineOptions: { strokeColor: colors[idx] || kindColor('fast'), strokeWeight: 5 } });
 
     // Tüm rotaları hafif göster, seçiliyi kalın
     if (window._altRenderers) {
@@ -1779,16 +1910,16 @@ function calculate() {
         const content = `
           <div style="font-family:Inter,sans-serif;padding:4px 2px;min-width:240px;max-width:300px;">
             <div style="font-weight:700;font-size:0.95rem;margin-bottom:6px;color:#1f2933;display:flex;align-items:center;gap:6px">${ic('road')} ${t.name}</div>
-            ${t.detail ? `<div style="font-size:0.78rem;color:#9a7434;margin-bottom:8px;background:#fbf6ea;padding:4px 8px;border-radius:6px;">${t.detail}</div>` : ''}
+            ${t.detail ? `<div style="font-size:0.78rem;color:var(--pop-accent);margin-bottom:8px;background:var(--pop-tint);padding:4px 8px;border-radius:6px;">${t.detail}</div>` : ''}
             <table style="width:100%;border-collapse:collapse;font-size:0.82rem;color:#444">
               ${row('Binek / SUV', 'car')}
               ${row('Minibüs', 'minibus')}
               ${row('Motosiklet', 'motorcycle')}
               ${row('Kamyon / Tır', 'truck')}
             </table>
-            <div style="margin-top:8px;padding:6px 8px;background:#fbf6ea;border-radius:6px;font-size:0.8rem;">
+            <div style="margin-top:8px;padding:6px 8px;background:var(--pop-tint);border-radius:6px;font-size:0.8rem;">
               <strong>Seçili aracınız:</strong>
-              <span style="color:#9a7434;font-weight:700"> ${sel}</span>
+              <span style="color:var(--pop-accent);font-weight:700"> ${sel}</span>
             </div>
             <div style="margin-top:6px;font-size:0.75rem;color:#888;line-height:1.4;">${ic('info')} KGM resmi tarifesi, ${t.eff || '2026'} tarihinden itibaren. Kamyon/Tır için 4. sınıf (4–5 akslı) varsayılır.${t.note ? ' ' + t.note : ''}</div>
           </div>`;
@@ -1831,7 +1962,7 @@ function calculate() {
       label: 'fast',
       badge: ic('bolt') + ' En hızlı',
       badgeClass: 'badge-fast',
-      color: '#dcb87a',
+      color: kindColor('fast'),
       req: {
         origin: routePoint('origin', origin),
         destination: routePoint('destination', destination),
@@ -1844,7 +1975,7 @@ function calculate() {
       label: 'cheap',
       badge: ic('coin') + ' En ucuz',
       badgeClass: 'badge-cheap',
-      color: '#78cdb0',
+      color: kindColor('cheap'),
       req: {
         origin: routePoint('origin', origin),
         destination: routePoint('destination', destination),
@@ -1858,7 +1989,7 @@ function calculate() {
       label: 'ferry',
       badge: ic('ferry') + ' Feribotlu',
       badgeClass: 'badge-ferry',
-      color: '#86b3e6',
+      color: kindColor('ferry'),
       req: {
         origin: routePoint('origin', origin),
         destination: routePoint('destination', destination),
@@ -1872,7 +2003,7 @@ function calculate() {
       label: 'free',
       badge: ic('leaf') + ' Ücretsiz yol',
       badgeClass: 'badge-free',
-      color: '#b4a4e6',
+      color: kindColor('free'),
       req: {
         origin: routePoint('origin', origin),
         destination: routePoint('destination', destination),
@@ -2075,11 +2206,12 @@ function svgIcon(svg, size) {
   return { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg), scaledSize: new google.maps.Size(size, size), anchor: new google.maps.Point(size / 2, size / 2) };
 }
 function evMarkerIcon(dc) {
-  const c = dc ? '#78cdb0' : '#86b3e6';
-  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13.5" fill="${c}" stroke="#131a21" stroke-width="2.5"/><path d="M17.4 7.5 10.5 17h4.8l-.9 7.5 7.1-9.8h-4.9z" fill="#131a21"/></svg>`, 32);
+  const c = dc ? cssVar('--success', '#4ade80') : cssVar('--blue', '#7dd3fc'), ln = cssVar('--surface', '#161b22');
+  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13.5" fill="${c}" stroke="${ln}" stroke-width="2.5"/><path d="M17.4 7.5 10.5 17h4.8l-.9 7.5 7.1-9.8h-4.9z" fill="${ln}"/></svg>`, 32);
 }
 function tollMarkerIcon() {
-  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="14.5" fill="#dcb87a" stroke="#131a21" stroke-width="2.5"/><text x="17" y="22.5" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="#131a21">₺</text></svg>`, 34);
+  const fill = cssVar('--accent', '#60a5fa'), ln = cssVar('--surface', '#161b22'), fg = cssVar('--on-accent', '#0b1220');
+  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="14.5" fill="${fill}" stroke="${ln}" stroke-width="2.5"/><text x="17" y="22.5" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle" fill="${fg}">₺</text></svg>`, 34);
 }
 
 let evFilterDc = true;
@@ -2214,12 +2346,44 @@ function renderEv(j) {
 // TEMA (açık / koyu) — sistem temasına uyar, seçim hatırlanır
 // ═══════════════════════════════════════════════
 function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
-function themeMapStyle() { return currentTheme() === 'light' ? lightMapStyle : darkMapStyle; }
-function applyTheme(t, persist) {
-  document.documentElement.setAttribute('data-theme', t);
-  try { if (persist) localStorage.setItem('ym-theme', t); } catch (e) {}
+function currentSkin() { return document.documentElement.getAttribute('data-skin') === 'yol' ? 'yol' : 'clean'; }
+const META_COLORS = { 'clean-light': '#f8fafc', 'clean-dark': '#0e1116', 'yol-light': '#f7f5f2', 'yol-dark': '#0f172a' };
+function cssVar(name, fallback) {
+  try {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    if (v) return v;
+  } catch (e) {}
+  return fallback || '';
+}
+// Harita stili, seçili görünüm + temanın --map-* değişkenlerinden üretilir
+function themeMapStyle() {
+  const c = n => ({ color: cssVar(n) });
+  return [
+    { elementType: 'geometry', stylers: [c('--map-land')] },
+    { elementType: 'labels.text.fill', stylers: [c('--map-text')] },
+    { elementType: 'labels.text.stroke', stylers: [c('--map-stroke')] },
+    { featureType: 'road', elementType: 'geometry', stylers: [c('--map-road')] },
+    { featureType: 'road.highway', elementType: 'geometry', stylers: [c('--map-hwy')] },
+    { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [c('--map-hwylabel')] },
+    { featureType: 'water', elementType: 'geometry', stylers: [c('--map-water')] },
+    { featureType: 'landscape.natural', elementType: 'geometry', stylers: [c('--map-nature')] },
+    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+    { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+    { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [c('--map-admin')] },
+  ];
+}
+function refreshSkinUI() {
+  const sk = currentSkin();
+  document.querySelectorAll('#skinSeg button').forEach(b => {
+    const on = b.dataset.skin === sk;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
   const m = document.querySelector('meta[name="theme-color"]');
-  if (m) m.setAttribute('content', t === 'light' ? '#f3efe8' : '#131a21');
+  if (m) m.setAttribute('content', META_COLORS[sk + '-' + currentTheme()]);
+}
+function repaintForTheme() {
+  refreshSkinUI();
   if (typeof map !== 'undefined' && map && map.setOptions) map.setOptions({ styles: themeMapStyle() });
   // Rota renklerini yeni temaya göre yeniden hesapla ve çiz
   if (window._routeMeta && window._routeMeta.length) {
@@ -2227,7 +2391,19 @@ function applyTheme(t, persist) {
     if (window._renderRoute) window._renderRoute(window._activeRouteIdx || 0);
   }
 }
+function applyTheme(t, persist) {
+  document.documentElement.setAttribute('data-theme', t);
+  try { if (persist) localStorage.setItem('ym-theme', t); } catch (e) {}
+  repaintForTheme();
+}
+function applySkin(k, persist) {
+  document.documentElement.setAttribute('data-skin', k === 'yol' ? 'yol' : 'clean');
+  try { if (persist) localStorage.setItem('ym-skin', currentSkin()); } catch (e) {}
+  repaintForTheme();
+}
 document.getElementById('themeBtn').addEventListener('click', () => applyTheme(currentTheme() === 'light' ? 'dark' : 'light', true));
+document.querySelectorAll('#skinSeg button').forEach(b => b.addEventListener('click', () => applySkin(b.dataset.skin, true)));
+refreshSkinUI();
 try {
   const mq = window.matchMedia && matchMedia('(prefers-color-scheme: light)');
   if (mq && mq.addEventListener) mq.addEventListener('change', e => {
@@ -2286,10 +2462,10 @@ async function onMapPick(e) {
   const lat = e.latLng.lat(), lng = e.latLng.lng();
   cancelPick();
   if (pickMarker) pickMarker.setMap(null);
-  const col = kind === 'origin' ? '#78cdb0' : '#dcb87a';
+  const col = kind === 'origin' ? cssVar('--success', '#4ade80') : cssVar('--accent', '#60a5fa'), ln = cssVar('--surface', '#161b22');
   pickMarker = new google.maps.Marker({
     position: { lat, lng }, map,
-    icon: svgIcon('<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="11" fill="' + col + '" stroke="#131a21" stroke-width="2.5"/><circle cx="15" cy="15" r="3.6" fill="#131a21"/></svg>', 30),
+    icon: svgIcon('<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="11" fill="' + col + '" stroke="' + ln + '" stroke-width="2.5"/><circle cx="15" cy="15" r="3.6" fill="' + ln + '"/></svg>', 30),
     zIndex: 20,
   });
   setHint('');
@@ -2551,35 +2727,6 @@ async function initMap() {
   fetchFuelPrices();
   initLocationBtn();
 }
-
-// Dark map style
-const darkMapStyle = [
-  { elementType:'geometry', stylers:[{color:'#182029'}] },
-  { elementType:'labels.text.fill', stylers:[{color:'#8fa0ae'}] },
-  { elementType:'labels.text.stroke', stylers:[{color:'#182029'}] },
-  { featureType:'road', elementType:'geometry', stylers:[{color:'#28343f'}] },
-  { featureType:'road.highway', elementType:'geometry', stylers:[{color:'#37454f'}] },
-  { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{color:'#dcb87a'}] },
-  { featureType:'water', elementType:'geometry', stylers:[{color:'#0f171e'}] },
-  { featureType:'poi', stylers:[{visibility:'off'}] },
-  { featureType:'transit', stylers:[{visibility:'off'}] },
-  { featureType:'administrative', elementType:'geometry.stroke', stylers:[{color:'#2b3843'}] },
-];
-
-// Açık tema harita stili
-const lightMapStyle = [
-  { elementType:'geometry', stylers:[{color:'#ece7dd'}] },
-  { elementType:'labels.text.fill', stylers:[{color:'#5f6b76'}] },
-  { elementType:'labels.text.stroke', stylers:[{color:'#f6f2ea'}] },
-  { featureType:'road', elementType:'geometry', stylers:[{color:'#fbf9f5'}] },
-  { featureType:'road.highway', elementType:'geometry', stylers:[{color:'#f0d6a0'}] },
-  { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{color:'#8a5f14'}] },
-  { featureType:'water', elementType:'geometry', stylers:[{color:'#b9d3e6'}] },
-  { featureType:'landscape.natural', elementType:'geometry', stylers:[{color:'#e3e5d4'}] },
-  { featureType:'poi', stylers:[{visibility:'off'}] },
-  { featureType:'transit', stylers:[{visibility:'off'}] },
-  { featureType:'administrative', elementType:'geometry.stroke', stylers:[{color:'#d5ccbb'}] },
-];
 
 document.getElementById('fuelPrice').addEventListener('input', updatePerKm);
 updatePerKm();
