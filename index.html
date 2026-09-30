@@ -955,15 +955,17 @@ const ic = (n, c = '') => `<svg class="i ${c}" aria-hidden="true"><use href="#i-
 // ═══════════════════════════════════════════════
 const TOLL_GATES = [
   // ── İSTANBUL BOĞAZ KÖPRÜLERİ ──
-  // FSM & 15 Tem: SADECE Anadolu→Avrupa yönü ücretli
-  { id: 'fsm',       name: 'FSM Köprüsü',                lat: 41.083, lng: 29.053,
+  // FSM & 15 Tem: 1 Ocak 2022'den beri İKİ YÖNDE de ücretli (KGM tarifesi). Fiyat her geçiş için.
+  // confirm:true → yalnızca Google rotada bu yerde "Paralı yol" işaretliyorsa sayılır
+  // (yakındaki sahil yolundan geçmek köprü ücreti doğurmaz).
+  { id: 'fsm',       name: 'FSM Köprüsü',                lat: 41.083, lng: 29.053, confirm: true,
     fees: { car:59, suv:59, minibus:75, motorcycle:25, truck:0,    bus:168  },
-    note: 'Anadolu→Avrupa yönü ücretli. Kamyon geçemez.' },
-  { id: 'bogazici',  name: '15 Temmuz Şehitler Köprüsü', lat: 41.047, lng: 29.033,
+    note: 'Her iki yönde ücretli (geçiş başına). Kamyon geçemez.' },
+  { id: 'bogazici',  name: '15 Temmuz Şehitler Köprüsü', lat: 41.047, lng: 29.033, confirm: true,
     fees: { car:59, suv:59, minibus:0,  motorcycle:25, truck:0,    bus:0    },
-    note: 'Sadece 1. sınıf binek araç geçebilir. Anadolu→Avrupa yönü ücretli.' },
+    note: 'Sadece 1. sınıf binek araç geçebilir. Her iki yönde ücretli (geçiş başına).' },
   // YSS: her iki yön ücretli, ağır vasıta zorunlu
-  { id: 'yavuz',     name: 'Yavuz Sultan Selim Köprüsü', lat: 41.206, lng: 29.087,
+  { id: 'yavuz',     name: 'Yavuz Sultan Selim Köprüsü', lat: 41.206, lng: 29.087, confirm: true,
     fees: { car:110, suv:110, minibus:145, motorcycle:75, truck:680, bus:270 },
     note: 'Her iki yön ayrı ayrı ücretli. Ağır vasıtalar zorunlu bu köprüyü kullanır.' },
 
@@ -977,14 +979,15 @@ const TOLL_GATES = [
     note: 'Gebze girişinden İzmir çıkışına TAM PARKUR — Osmangazi köprüsü dahil. Ara çıkışlar farklı ücret: Bursa Kuzey ~1.645 ₺, Manisa Turgutlu ~2.515 ₺. (1 Temmuz 2026 tarifesi)' },
 
   // ── 1915 ÇANAKKALE ──
-  { id: 'canakkale', name: '1915 Çanakkale Köprüsü',     lat: 40.107, lng: 26.434,
+  // Koordinat 30 Eyl 2026'da Google rota verisiyle düzeltildi (eski nokta köprüden ~30 km uzaktaydı, ücret hiç tespit edilmiyordu)
+  { id: 'canakkale', name: '1915 Çanakkale Köprüsü',     lat: 40.337, lng: 26.635, confirm: true,
     fees: { car:1170, suv:1170, minibus:1465, motorcycle:295, truck:2930, bus:2635 },
     note: 'Her iki yön ücretli. Malkara-Çanakkale tam hat otomobil 1.285 ₺.' },
 
   // ── TÜNELLER ──
-  { id: 'avrasya',   name: 'Avrasya Tüneli',              lat: 41.011, lng: 28.966,
-    fees: { car:280, suv:280, minibus:280, motorcycle:0, truck:0, bus:0 },
-    note: 'Gündüz (05:00-23:59) 280 ₺, gece (00:00-04:59) 140 ₺. Kamyon/otobüs/TIR geçemez. Yükseklik sınırı 2,8 m.' },
+  { id: 'avrasya',   name: 'Avrasya Tüneli',              lat: 41.011, lng: 28.966, confirm: true,
+    fees: { car:330, suv:330, minibus:280, motorcycle:0, truck:0, bus:0 },
+    note: 'Otomobil: gündüz (05:00-23:59) 330 ₺, gece (00:00-04:59) 165 ₺ (1 Temmuz 2026 zammı sonrası). Minibüs/motosiklet tarifesi teyit edilmedi. Kamyon/otobüs/TIR geçemez. Yükseklik sınırı 2,8 m.' },
   { id: 'bolu',      name: 'Bolu Dağı Tüneli (TEM)',      lat: 40.732, lng: 31.573,
     fees: { car:63, suv:63, minibus:126, motorcycle:32, truck:250, bus:250 },
     note: 'İstanbul-Ankara TEM güzergahı.' },
@@ -1191,18 +1194,80 @@ function resolveIstIzm(gate, routePoints) {
     name: `İstanbul–İzmir Otoyolu (Osmangazi dahil, ${ex.name} çıkışına kadar)` };
 }
 
-function detectTolls(routePoints) {
+// Google'ın "Paralı yol" diye işaretlediği adımların noktaları (rotada gerçekten ücretli kısım nerede?)
+function tollStepPoints(route) {
+  const pts = [];
+  const steps = (route && route.legs && route.legs[0] && route.legs[0].steps) || [];
+  steps.forEach(st => {
+    if (!/paralı yol|toll road/i.test(st.instructions || '')) return;
+    (st.path || st.lat_lngs || []).forEach(p => pts.push({ lat: p.lat(), lng: p.lng() }));
+  });
+  return pts;
+}
+
+// tollPts: tollStepPoints(route). Verilmezse (undefined) eski davranış: sadece yakınlık.
+function detectTolls(routePoints, tollPts) {
   const THRESHOLD_KM = 2.5;
+  const CONFIRM_KM = 2.0;
   const detected = [];
   for (const gate of TOLL_GATES) {
     if (!gate.lat || !gate.lng) continue;
     const isOnRoute = routePoints.some(p =>
       haversineKm(gate.lat, gate.lng, p.lat, p.lng) < THRESHOLD_KM
     );
-    if (isOnRoute) detected.push(gate.id === 'ist_izm_full' ? resolveIstIzm(gate, routePoints) : gate);
+    if (!isOnRoute) continue;
+    // Köprü/tünel gibi noktasal geçişler: Google bu kısmı ücretli işaretlemiyorsa rota sadece yakından geçiyordur
+    if (gate.confirm && tollPts) {
+      const confirmed = tollPts.some(p => haversineKm(gate.lat, gate.lng, p.lat, p.lng) < CONFIRM_KM);
+      if (!confirmed) continue;
+    }
+    detected.push(gate.id === 'ist_izm_full' ? resolveIstIzm(gate, routePoints) : gate);
   }
   const seen = new Set();
   return detected.filter(g => { if (seen.has(g.id)) return false; seen.add(g.id); return true; });
+}
+
+// Rota etiketleri istek türüne (avoidTolls vb.) göre değil GERÇEK sonuca göre verilir.
+// items: [{ total, sec, hasFerry, tollFree }] → [{ index, kind }] (gösterilecek sırayla)
+// kind: best (hem en hızlı hem en ucuz) | fast | cheap | free | ferry | alt
+function arrangeRoutes(items) {
+  const EPS = 0.5; // ₺
+  const idx = items.map((_, i) => i);
+  const plain = idx.filter(i => !items[i].hasFerry); // feribot ücreti toplamda yok → karşılaştırmaya girmez
+  const dominated = j => plain.some(i => {
+    if (i === j) return false;
+    const a = items[i], b = items[j];
+    const atLeast = a.total <= b.total + EPS && a.sec <= b.sec;
+    const strictly = a.total < b.total - EPS || a.sec < b.sec;
+    return atLeast && (strictly || i < j);
+  });
+  const kept = idx.filter(j => items[j].hasFerry || !dominated(j));
+  const keptPlain = kept.filter(j => !items[j].hasFerry);
+  const by = (arr, f) => arr.reduce((b, j) => (b === undefined || f(j) < f(b) ? j : b), undefined);
+  const fast = by(keptPlain, j => items[j].sec * 1e6 + items[j].total);
+  const cheap = by(keptPlain, j => items[j].total * 1e6 + items[j].sec);
+  const rank = { best: 0, fast: 0, cheap: 1, free: 2, ferry: 3, alt: 4 };
+  return kept.map(j => {
+    let kind;
+    if (items[j].hasFerry) kind = 'ferry';
+    else if (j === fast && j === cheap) kind = 'best';
+    else if (j === fast) kind = 'fast';
+    else if (j === cheap) kind = 'cheap';
+    else if (items[j].tollFree) kind = 'free';
+    else kind = 'alt';
+    return { index: j, kind };
+  }).sort((a, b) => (rank[a.kind] - rank[b.kind]) || (a.index - b.index));
+}
+
+function routeKindMeta(kind) {
+  switch (kind) {
+    case 'best':  return { badge: ic('bolt') + ' En hızlı ve en ucuz', badgeClass: 'badge-fast',  color: '#dcb87a' };
+    case 'fast':  return { badge: ic('bolt') + ' En hızlı',            badgeClass: 'badge-fast',  color: '#dcb87a' };
+    case 'cheap': return { badge: ic('coin') + ' En ucuz',             badgeClass: 'badge-cheap', color: '#78cdb0' };
+    case 'free':  return { badge: ic('leaf') + ' Ücretsiz yol',        badgeClass: 'badge-free',  color: '#b4a4e6' };
+    case 'ferry': return { badge: ic('ferry') + ' Feribotlu',          badgeClass: 'badge-ferry', color: '#86b3e6' };
+    default:      return { badge: ic('route') + ' Alternatif',         badgeClass: 'badge-alt',   color: '#93a1af' };
+  }
 }
 
 function formatTL(amount) {
@@ -1216,7 +1281,12 @@ function calculate() {
   const origin = document.getElementById('origin').value.trim();
   const destination = document.getElementById('destination').value.trim();
   const consumption = parseFloat(document.getElementById('consumption').value);
-  const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
+  let fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
+  if (!(fuelPrice > 0)) {
+    // Sayfa yeni açıldıysa canlı fiyat henüz gelmemiş olabilir; son bilinen/ortalama değeri kullan
+    fuelPrice = selectedFuel === 'elektrik' ? EV_AVG.dc : (fuelPrices[selectedFuel] || 0);
+    if (fuelPrice > 0) document.getElementById('fuelPrice').value = fuelPrice.toFixed(2);
+  }
 
   // Validation
   const errorBox = document.getElementById('errorBox');
@@ -1246,7 +1316,9 @@ function calculate() {
     const liters = (distanceKm * consumption) / 100;
     const fuelCost = liters * fuelPrice;
     const routePoints = (route.overview_path || []).map(p => ({ lat: p.lat(), lng: p.lng() }));
-    const tolls = detectTolls(routePoints);
+    const tollPts = tollStepPoints(route);
+    const tolls = detectTolls(routePoints, tollPts);
+    const tollMarked = tollPts.length > 0;
     let tollTotal = 0;
     tolls.forEach(t => { tollTotal += t.fees[selectedVehicle] || 0; });
 
@@ -1272,6 +1344,10 @@ function calculate() {
       tollTotal,
       total: fuelCost + tollTotal,
       tolls,
+      sec: leg.duration.value,
+      tollMarked,
+      unknownToll: tollMarked && tolls.length === 0,
+      tollFree: !tollMarked && tolls.length === 0,
       hasFerry: hasFerry || hasFerryInSummary,
     };
   }
@@ -1298,7 +1374,8 @@ function calculate() {
         : `${r.distanceKm.toFixed(0)} km × ${consumption_val} L/100km × ${fuelPrice.toFixed(2)} ₺/L`;
     document.getElementById('tollCost').textContent = formatTL(r.tollTotal);
     document.getElementById('tollDetail').textContent =
-      r.tolls.length > 0 ? `${r.tolls.length} geçiş noktası tespit edildi` : 'Ücretli geçiş yok';
+      r.tolls.length > 0 ? `${r.tolls.length} geçiş noktası tespit edildi`
+      : r.unknownToll ? 'Ücretli yol var, ücreti hesaplanamadı' : 'Ücretli geçiş yok';
 
     // Feribot uyarısı
     let ferryWarn = document.getElementById('ferryWarning');
@@ -1398,6 +1475,9 @@ function calculate() {
             <span class="toll-price">${formatTL(fee)}</span>
           </div>`;
       });
+      tollListWrap.style.display = 'block';
+    } else if (r.unknownToll) {
+      tollList.innerHTML = '<div class="fuel-note warn">Google bu rotada ücretli yol gösteriyor ama bu geçişin ücretini listemizde bulamadık. Toplam bu kadar EKSİK olabilir; ücreti işletmecinin sitesinden kontrol edin.</div>';
       tollListWrap.style.display = 'block';
     } else {
       tollListWrap.style.display = 'none';
@@ -1635,13 +1715,13 @@ function calculate() {
       }
     });
 
-    window._lastDirectionsResult = { ...validResults[0], routes: filtered.map(f => f.route) };
-    window._routeMeta = filtered.map(f => f.req);
-    allRoutes = filtered.map(f => calcRouteData(f.route));
-
-    // En ucuz rotayı bul
-    const cheapestIdx = allRoutes.reduce((best, r, i) =>
-      r.total < allRoutes[best].total ? i : best, 0);
+    // Etiketler gerçek maliyet/süreye göre; başka rotadan hem pahalı hem yavaş olanlar gösterilmez
+    const dataAll = filtered.map(f => ({ f, d: calcRouteData(f.route) }));
+    const arranged = arrangeRoutes(dataAll.map(x => x.d));
+    const ordered = arranged.map(a => ({ ...dataAll[a.index], kind: a.kind }));
+    window._lastDirectionsResult = { ...validResults[0], routes: ordered.map(o => o.f.route) };
+    window._routeMeta = ordered.map(o => ({ ...routeKindMeta(o.kind), label: o.kind }));
+    allRoutes = ordered.map(o => o.d);
 
     // Harita kur
     document.getElementById('mapPlaceholder').style.display = 'none';
@@ -1687,6 +1767,20 @@ function calculate() {
     } else {
       tabsEl.style.display = 'none';
     }
+    // Elenen rotalar hakkında şeffaf not
+    let hid = document.getElementById('routeHiddenNote');
+    if (!hid) {
+      hid = document.createElement('div');
+      hid.id = 'routeHiddenNote';
+      hid.className = 'fuel-note';
+      hid.style.marginTop = '-6px';
+      tabsEl.after(hid);
+    }
+    const hiddenCount = filtered.length - allRoutes.length;
+    hid.textContent = hiddenCount > 0
+      ? `${hiddenCount} alternatif rota daha bulundu; hem daha pahalı hem daha yavaş olduğu için gösterilmedi.`
+      : '';
+    hid.style.display = hiddenCount > 0 ? 'block' : 'none';
 
     document.getElementById('resultSection').classList.add('visible');
     renderRoute(0);
