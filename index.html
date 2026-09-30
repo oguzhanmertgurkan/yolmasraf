@@ -211,8 +211,11 @@
       letter-spacing: -0.3px;
       display: flex; align-items: center; gap: 10px;
     }
-    .logo-mark { width: 34px; height: 34px; border-radius: 11px; background: rgba(var(--accent-rgb),0.14); color: var(--accent); display: flex; align-items: center; justify-content: center; }
-    .logo-mark .i { width: 20px; height: 20px; }
+    .logo-mark { width: 36px; height: 36px; border-radius: 11px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-mark svg { width: 30px; height: 30px; overflow: visible; }
+    .logo-mark .lg-road { fill: none; stroke: var(--on-accent); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 0.1 5.2; }
+    .logo-mark .lg-coin { fill: var(--on-accent); }
+    .logo-mark .lg-t { fill: var(--accent); font: 800 12.5px Arial, Helvetica, sans-serif; }
     .logo span { color: var(--accent); }
     .fuel-badge {
       display: flex;
@@ -500,14 +503,32 @@
     .per-person {
       background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px 16px;
+      border-radius: var(--radius);
+      padding: 16px 20px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      text-align: center;
     }
-    .per-person-label { font-size: 0.82rem; color: var(--muted); }
-    .per-person-val { font-size: 1rem; font-weight: 700; color: var(--success); }
+    .per-person-label { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .per-person-val { font-family: var(--font-head); font-size: 2rem; font-weight: 800; line-height: 1.1; color: var(--success); }
+
+    /* maliyet dağılımı (pasta / halka grafik) */
+    .donut-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .donut-card .section-label { margin-bottom: 10px; }
+    .donut-wrap { display: flex; align-items: center; gap: 16px; }
+    #donutSvg { width: 132px; height: 132px; flex-shrink: 0; }
+    #donutSvg .ring-bg { fill: none; stroke: var(--border); stroke-width: 16; opacity: .5; }
+    #donutSvg .seg { fill: none; stroke-width: 16; transition: stroke-dasharray .4s ease; }
+    #donutSvg .c-lab { fill: var(--muted); font: 600 7.5px var(--font-body); text-anchor: middle; }
+    #donutSvg .c-val { fill: var(--text); font: 800 12.5px var(--font-head); text-anchor: middle; }
+    .donut-legend { list-style: none; display: flex; flex-direction: column; gap: 9px; flex: 1; min-width: 0; }
+    .donut-legend li { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; font-size: 0.82rem; }
+    .donut-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .donut-legend .nm { color: var(--muted); }
+    .donut-legend .vl { font-weight: 700; white-space: nowrap; }
+    .donut-legend .pc { color: var(--muted); font-weight: 500; font-size: 0.74rem; margin-left: 4px; }
 
     .route-info {
       display: grid;
@@ -781,7 +802,32 @@
     .fuel-unit { white-space: nowrap; }
     .map-back, .map-jump { display: none; }
 
+    /* ── MASAÜSTÜ: form solda (sabit), harita sağ üstte, sonuçlar haritanın altında ── */
+    .stage { display: flex; flex-direction: column; min-width: 0; }
+    @media (min-width: 769px) {
+      header { position: sticky; top: 0; z-index: 40; }
+      main { align-items: start; }
+      .panel { position: sticky; top: var(--hdr-h, 71px); height: calc(100vh - var(--hdr-h, 71px)); overflow-y: auto; }
+      .panel > * { flex-shrink: 0; }
+      #map-container { flex-shrink: 0; height: clamp(360px, 50vh, 600px); }
+      #map-container:not(.has-map) { height: calc(100vh - var(--hdr-h, 71px)); }
+      #map { min-height: 0; }
+      .result-section { --surface2: var(--surface); padding: 22px 24px 40px; }
+      .result-section.visible { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: stretch; }
+      .result-section > * { grid-column: 1 / -1; }
+      .result-section.has-pp .result-hero { grid-column: 1; }
+      .result-section.has-pp .per-person { grid-column: 2; }
+      .result-section .breakdown { grid-column: 1; align-self: start; }
+      .result-section .donut-card { grid-column: 2; }
+      .result-hero { display: flex; flex-direction: column; justify-content: center; }
+      .result-hero .total-amount { font-size: 3rem; }
+      .per-person-val { font-size: 2.4rem; }
+    }
+
     @media (max-width: 768px) {
+      .stage { display: contents; }
+      #map-container { order: 2; }
+      .result-section { order: 1; background: var(--surface); padding: 0 16px 28px; }
       header { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 12px 16px; }
       .logo { font-size: 1.2rem; }
       .hdr-tools { grid-column: 2; grid-row: 1; gap: 6px; }
@@ -894,7 +940,7 @@
 
 <!-- HEADER -->
 <header>
-  <div class="logo"><span class="logo-mark"><svg class="i" aria-hidden="true"><use href="#i-route"/></svg></span><div>Yol<span>Masraf</span></div></div>
+  <div class="logo"><span class="logo-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path class="lg-road" d="M5 27 C 5 17, 27 20, 27 9"/><circle class="lg-coin" cx="6" cy="26" r="3"/><circle class="lg-coin" cx="23.5" cy="9.5" r="8"/><text class="lg-t" x="23.5" y="14" text-anchor="middle">₺</text></svg></span><div>Yol<span>Masraf</span></div></div>
   <div class="fuel-badge" id="fuelBadge">
     <div class="fuel-dot"></div>
     <div class="fuel-items">
@@ -1055,91 +1101,9 @@
       <svg class="i" aria-hidden="true"><use href="#i-calc"/></svg> Hesapla
     </button>
 
-    <!-- RESULTS -->
-    <div class="result-section" id="resultSection">
-
-      <!-- ROTA SEÇİCİ TABLAR -->
-      <div class="routes-tabs" id="routesTabs" style="display:none"></div>
-
-      <div class="result-hero">
-        <div class="total-label">Toplam Tahmini Maliyet</div>
-        <div class="total-amount" id="totalAmount">0 ₺</div>
-        <div class="total-sub" id="totalSub"></div>
-        <div id="ferryHeroBar" style="display:none; margin-top:12px; padding:10px 14px; background:var(--ferry-bg); border:1px solid var(--ferry-bd); border-radius:10px;">
-          <div style="font-size:0.8rem; font-weight:600; color:var(--ferry-fg); margin-bottom:4px; display:flex; align-items:center; gap:6px;"><svg class="i" aria-hidden="true"><use href="#i-ferry"/></svg> Feribot dahil tahmini toplam</div>
-          <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">
-            <span id="ferryTotalAmount" style="font-family:'Space Grotesk',sans-serif; font-size:1.9rem; font-weight:700; color:var(--ferry-fg2);">—</span>
-            <span style="font-size:0.78rem; color:var(--ferry-fg);" id="ferryTotalNote"></span>
-          </div>
-        </div>
-      </div>
-
-      <button type="button" class="map-jump" id="mapJump"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg> Haritada göster</button>
-
-      <div class="route-info">
-        <div class="info-card">
-          <div class="ic-label"><svg class="i" aria-hidden="true"><use href="#i-route"/></svg> Mesafe</div>
-          <div class="ic-val" id="routeDistance">—</div>
-        </div>
-        <div class="info-card">
-          <div class="ic-label"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg> Süre</div>
-          <div class="ic-val" id="routeDuration">—</div>
-        </div>
-      </div>
-
-      <div class="breakdown">
-        <div class="breakdown-item">
-          <div class="breakdown-left">
-            <span class="breakdown-icon" id="fuelIcon"><svg class="i" aria-hidden="true"><use href="#i-pump"/></svg></span>
-            <div>
-              <div class="breakdown-name" id="fuelName">Yakıt Masrafı</div>
-              <div class="breakdown-detail" id="fuelDetail"></div>
-            </div>
-          </div>
-          <div class="breakdown-price" id="fuelCost">—</div>
-        </div>
-        <div class="breakdown-item">
-          <div class="breakdown-left">
-            <span class="breakdown-icon"><svg class="i" aria-hidden="true"><use href="#i-road"/></svg></span>
-            <div>
-              <div class="breakdown-name">OGS/HGS Geçiş Ücretleri</div>
-              <div class="breakdown-detail" id="tollDetail"></div>
-            </div>
-          </div>
-          <div class="breakdown-price" id="tollCost">—</div>
-        </div>
-      </div>
-
-      <div id="tollListWrap">
-        <div class="section-label" style="margin-bottom:8px">Geçiş noktaları</div>
-        <div class="toll-list" id="tollList"></div>
-      </div>
-
-      <div id="evWrap" style="display:none">
-        <div class="ev-head">
-          <div class="section-label" style="margin:0;display:flex;align-items:center;gap:6px"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg> Rota üzerindeki şarj istasyonları</div>
-          <div class="ev-chips">
-            <button class="ev-chip active" id="evChipDc" onclick="setEvFilter(true)">Hızlı DC</button>
-            <button class="ev-chip" id="evChipAll" onclick="setEvFilter(false)">AC dahil</button>
-          </div>
-        </div>
-        <div id="evStatus" class="ev-status">Yükleniyor…</div>
-        <div class="ev-list" id="evList"></div>
-        <div class="fuel-note" id="evNote"></div>
-      </div>
-
-      <div class="per-person" id="perPersonRow" style="display:none">
-        <span class="per-person-label"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg> Kişi başı maliyet</span>
-        <span class="per-person-val" id="perPersonVal">—</span>
-      </div>
-
-      <div id="resultFootnote" style="font-size:0.72rem;color:var(--muted);line-height:1.6;padding:0 4px;">
-        * Geçiş ücretleri KGM'nin 2026 tarife tablolarına (giriş × çıkış gişesi) göre hesaplanır; rotanın kullandığı gişeler Google rotasından tahmin edilir. Yakıt maliyeti tahminidir; trafik ve sürüş stiline göre değişebilir.
-      </div>
-    </div>
-
   </div>
 
+  <div class="stage">
   <!-- MAP -->
   <div id="map-container" style="position:relative;">
     <div class="map-placeholder" id="mapPlaceholder">
@@ -1149,6 +1113,102 @@
  <div id="map"></div>
     <div class="pick-banner" id="pickBanner"><span id="pickText">Haritaya dokunun</span><button type="button" onclick="cancelPick()">İptal</button></div>
     <button type="button" class="map-back" id="mapBack" aria-label="Sonuçlara dön">&#8593; Sonuçlar</button>
+  </div>
+
+
+  <!-- SONUÇLAR -->
+  <!-- RESULTS -->
+  <div class="result-section" id="resultSection">
+
+    <!-- ROTA SEÇİCİ TABLAR -->
+    <div class="routes-tabs" id="routesTabs" style="display:none"></div>
+
+    <div class="result-hero">
+      <div class="total-label">Toplam Tahmini Maliyet</div>
+      <div class="total-amount" id="totalAmount">0 ₺</div>
+      <div class="total-sub" id="totalSub"></div>
+      <div id="ferryHeroBar" style="display:none; margin-top:12px; padding:10px 14px; background:var(--ferry-bg); border:1px solid var(--ferry-bd); border-radius:10px;">
+        <div style="font-size:0.8rem; font-weight:600; color:var(--ferry-fg); margin-bottom:4px; display:flex; align-items:center; gap:6px;"><svg class="i" aria-hidden="true"><use href="#i-ferry"/></svg> Feribot dahil tahmini toplam</div>
+        <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">
+          <span id="ferryTotalAmount" style="font-family:'Space Grotesk',sans-serif; font-size:1.9rem; font-weight:700; color:var(--ferry-fg2);">—</span>
+          <span style="font-size:0.78rem; color:var(--ferry-fg);" id="ferryTotalNote"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="per-person" id="perPersonRow" style="display:none">
+    <span class="per-person-label"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg> Kişi başı maliyet</span>
+    <span class="per-person-val" id="perPersonVal">—</span>
+  </div>
+
+  <button type="button" class="map-jump" id="mapJump"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg> Haritada göster</button>
+
+    <div class="route-info">
+      <div class="info-card">
+        <div class="ic-label"><svg class="i" aria-hidden="true"><use href="#i-route"/></svg> Mesafe</div>
+        <div class="ic-val" id="routeDistance">—</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-label"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg> Süre</div>
+        <div class="ic-val" id="routeDuration">—</div>
+      </div>
+    </div>
+
+    <div class="breakdown">
+      <div class="breakdown-item">
+        <div class="breakdown-left">
+          <span class="breakdown-icon" id="fuelIcon"><svg class="i" aria-hidden="true"><use href="#i-pump"/></svg></span>
+          <div>
+            <div class="breakdown-name" id="fuelName">Yakıt Masrafı</div>
+            <div class="breakdown-detail" id="fuelDetail"></div>
+          </div>
+        </div>
+        <div class="breakdown-price" id="fuelCost">—</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-left">
+          <span class="breakdown-icon"><svg class="i" aria-hidden="true"><use href="#i-road"/></svg></span>
+          <div>
+            <div class="breakdown-name">OGS/HGS Geçiş Ücretleri</div>
+            <div class="breakdown-detail" id="tollDetail"></div>
+          </div>
+        </div>
+        <div class="breakdown-price" id="tollCost">—</div>
+      </div>
+    </div>
+
+    <div class="donut-card" id="donutCard" style="display:none">
+    <div class="section-label">Maliyet dağılımı</div>
+    <div class="donut-wrap">
+      <svg id="donutSvg" viewBox="0 0 120 120" role="img" aria-label="Maliyet dağılımı"></svg>
+      <ul class="donut-legend" id="donutLegend"></ul>
+    </div>
+  </div>
+
+  <div id="tollListWrap">
+      <div class="section-label" style="margin-bottom:8px">Geçiş noktaları</div>
+      <div class="toll-list" id="tollList"></div>
+    </div>
+
+    <div id="evWrap" style="display:none">
+      <div class="ev-head">
+        <div class="section-label" style="margin:0;display:flex;align-items:center;gap:6px"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg> Rota üzerindeki şarj istasyonları</div>
+        <div class="ev-chips">
+          <button class="ev-chip active" id="evChipDc" onclick="setEvFilter(true)">Hızlı DC</button>
+          <button class="ev-chip" id="evChipAll" onclick="setEvFilter(false)">AC dahil</button>
+        </div>
+      </div>
+      <div id="evStatus" class="ev-status">Yükleniyor…</div>
+      <div class="ev-list" id="evList"></div>
+      <div class="fuel-note" id="evNote"></div>
+    </div>
+
+  
+    <div id="resultFootnote" style="font-size:0.72rem;color:var(--muted);line-height:1.6;padding:0 4px;">
+      * Geçiş ücretleri KGM'nin 2026 tarife tablolarına (giriş × çıkış gişesi) göre hesaplanır; rotanın kullandığı gişeler Google rotasından tahmin edilir. Yakıt maliyeti tahminidir; trafik ve sürüş stiline göre değişebilir.
+    </div>
+  </div>
+
   </div>
 
 </main>
@@ -1614,6 +1674,29 @@ function routeKindMeta(kind) {
   }
 }
 
+// Maliyet dağılımı halka grafiği (yakıt / geçiş / tahmini feribot)
+function renderDonut(r, ferryFee) {
+  const card = document.getElementById('donutCard'), svg = document.getElementById('donutSvg'), lg = document.getElementById('donutLegend');
+  if (!card || !svg || !lg) return;
+  const parts = [
+    { name: selectedFuel === 'elektrik' ? 'Elektrik (şarj)' : 'Yakıt', v: r.fuelCost || 0, col: 'var(--accent)' },
+    { name: 'Otoyol / köprü', v: r.tollTotal || 0, col: 'var(--violet)' },
+    { name: 'Feribot (tahmini)', v: ferryFee || 0, col: 'var(--ferry-fg)' },
+  ].filter(p => p.v > 0);
+  const sum = parts.reduce((a, p) => a + p.v, 0);
+  if (!sum) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  const R = 46, C = 2 * Math.PI * R, gap = parts.length > 1 ? 2.5 : 0;
+  let off = 0, segs = '';
+  parts.forEach(p => {
+    const len = Math.max(0, p.v / sum * C - gap);
+    segs += `<circle class="seg" cx="60" cy="60" r="${R}" stroke="${p.col}" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 60 60)"/>`;
+    off += p.v / sum * C;
+  });
+  svg.innerHTML = `<circle class="ring-bg" cx="60" cy="60" r="${R}"/>${segs}<text class="c-lab" x="60" y="56">${ferryFee > 0 ? 'Feribot dahil' : 'Toplam'}</text><text class="c-val" x="60" y="72">${formatTL(sum)}</text>`;
+  lg.innerHTML = parts.map(p => `<li><span class="dot" style="background:${p.col}"></span><span class="nm">${p.name}</span><span class="vl">${formatTL(p.v)}<span class="pc">%${Math.round(p.v / sum * 100)}</span></span></li>`).join('');
+}
+
 function formatTL(amount) {
   return amount.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' ₺';
 }
@@ -1702,6 +1785,7 @@ function calculate() {
     window._activeRouteIdx = idx;
     window._renderRoute = renderRoute;
     const r = allRoutes[idx];
+    let donutFerry = 0;
     const consumption_val = parseFloat(document.getElementById('consumption').value);
 
     // Tabları güncelle (aktif tab)
@@ -1800,6 +1884,7 @@ function calculate() {
         ${ferryInfo}
       `;
 
+      donutFerry = ferryFee;
       // Hero bar güncelle
       if (ferryHeroBar && ferryFee > 0) {
         ferryHeroBar.style.display = 'block';
@@ -1840,6 +1925,8 @@ function calculate() {
 
     // Kişi başı
     const perPersonRow = document.getElementById('perPersonRow');
+    document.getElementById('resultSection').classList.toggle('has-pp', passengers > 1);
+    renderDonut(r, donutFerry);
     if (passengers > 1) {
       perPersonRow.style.display = 'flex';
       document.getElementById('perPersonVal').textContent = formatTL(r.total / passengers) + ' / kişi';
@@ -2401,6 +2488,9 @@ function applySkin(k, persist) {
   try { if (persist) localStorage.setItem('ym-skin', currentSkin()); } catch (e) {}
   repaintForTheme();
 }
+function setHdrH() { const h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px'); }
+setHdrH(); window.addEventListener('resize', setHdrH);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(setHdrH);
 document.getElementById('themeBtn').addEventListener('click', () => applyTheme(currentTheme() === 'light' ? 'dark' : 'light', true));
 document.querySelectorAll('#skinSeg button').forEach(b => b.addEventListener('click', () => applySkin(b.dataset.skin, true)));
 refreshSkinUI();
