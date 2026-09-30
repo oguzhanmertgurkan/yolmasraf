@@ -766,6 +766,36 @@
     .skin-seg button:hover { color: var(--text); }
     .skin-seg button.on { background: var(--accent); color: var(--on-accent); }
 
+    /* tek yön / gidiş-dönüş */
+    .trip-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 12px; padding: 3px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; }
+    .trip-seg button { border: 0; background: transparent; color: var(--muted); font-family: inherit; font-size: 0.82rem; font-weight: 700; padding: 9px 10px; border-radius: 9px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .trip-seg button:hover { color: var(--text); }
+    .trip-seg button.on { background: var(--accent); color: var(--on-accent); }
+
+    /* rota çizelgesi */
+    .tl-group + .tl-group { margin-top: 16px; }
+    .tl-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.86rem; font-weight: 700; margin: 2px 0 10px; }
+    .tl-head b { color: var(--accent); }
+    .tl { position: relative; padding-left: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .tl::before { content: ''; position: absolute; left: 9px; top: 12px; bottom: 12px; border-left: 2px dashed var(--border); }
+    .tl-item, .tl-end { position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; font-size: 0.84rem; line-height: 1.35; }
+    .tl-body { min-width: 0; }
+    .tl-end .tl-body { font-weight: 700; }
+    .tl-name { font-weight: 600; }
+    .tl-detail { display: block; font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
+    .tl-price { font-weight: 700; white-space: nowrap; }
+    .tl-dot { position: absolute; left: -28px; top: 1px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
+    .tl-dot.a { border-color: var(--success); }
+    .tl-item .tl-dot { left: -23px; top: 4px; width: 10px; height: 10px; border: 0; background: var(--accent); box-shadow: 0 0 0 3px var(--surface); }
+    .result-section { --tl-bg: var(--surface); }
+
+    /* alt bilgi */
+    .site-foot { margin-top: auto; border-top: 1px solid var(--border); background: var(--surface); padding: 18px 28px 22px; text-align: center; font-size: 0.78rem; color: var(--muted); }
+    .site-foot nav { display: flex; gap: 6px 22px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .site-foot a { color: var(--text); font-weight: 600; text-decoration: none; }
+    .site-foot a:hover { color: var(--accent); text-decoration: underline; }
+    .site-foot p { max-width: 720px; margin: 0 auto; line-height: 1.55; }
+
     /* Yol görünümü: gradyan başlık + kesik çizgili yol çizimi */
     .panel-head { position: relative; }
     .panel-head .road-art { display: none; }
@@ -826,6 +856,7 @@
 
     @media (max-width: 768px) {
       .stage { display: contents; }
+      .site-foot { order: 3; }
       #map-container { order: 2; }
       .result-section { order: 1; background: var(--surface); padding: 0 16px 28px; }
       header { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 12px 16px; }
@@ -1001,6 +1032,10 @@
           </div>
           <button type="button" class="location-btn pick-btn" id="pickDestination" onclick="startPick('destination')" title="Haritadan seç" aria-label="Varışı haritadan seç"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg></button>
         </div>
+      </div>
+      <div class="trip-seg" id="tripSeg" role="group" aria-label="Yolculuk türü">
+        <button type="button" data-trip="oneway" class="on" aria-pressed="true">Tek yön</button>
+        <button type="button" data-trip="round" aria-pressed="false">Gidiş-dönüş</button>
       </div>
       <div class="route-hint" id="routeHint"></div>
     </div>
@@ -1186,7 +1221,7 @@
   </div>
 
   <div id="tollListWrap">
-      <div class="section-label" style="margin-bottom:8px">Geçiş noktaları</div>
+      <div class="section-label" style="margin-bottom:8px">Rota ve geçiş noktaları</div>
       <div class="toll-list" id="tollList"></div>
     </div>
 
@@ -1209,9 +1244,16 @@
     </div>
   </div>
 
+
+  <footer class="site-foot">
+  <nav aria-label="Alt bağlantılar"><a href="/hakkinda.html">Hakkında</a><a href="/sss.html">Sıkça sorulan sorular</a><a href="/gizlilik.html">Gizlilik ve KVKK</a></nav>
+  <p>YolMasraf tahmini maliyet gösterir; gerçek ücretler ve yakıt fiyatları değişebilir. Geçiş ücretleri KGM tarifelerine dayanır.</p>
+</footer>
   </div>
 
 </main>
+
+
 
 <script>
 const ic = (n, c = '') => `<svg class="i ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
@@ -1494,6 +1536,22 @@ function renderFuelUi() {
 let selectedVehicle = 'car';
 let selectedFuel = 'benzin';
 let passengers = 1;
+let tripMode = 'oneway'; // 'oneway' | 'round'
+// Seçili yolculuk türüne göre (tek yön / gidiş-dönüş) toplamlar. Dönüş ücreti ters geometriyle ayrıca hesaplanır.
+function tripTotals(r) {
+  const rt = tripMode === 'round';
+  const fuel = r.fuelCost * (rt ? 2 : 1);
+  const toll = r.tollTotal + (rt ? (r.retTollTotal || 0) : 0);
+  return { rt, mult: rt ? 2 : 1, fuel, toll, total: fuel + toll, km: r.distanceKm * (rt ? 2 : 1) };
+}
+function tollTimeline(title, from, to, tolls, subtotal) {
+  const veh = selectedVehicle;
+  const items = tolls.map(t => {
+    const priceTxt = (t.blocked && t.blocked[veh]) ? 'Geçemez' : (t.unverified && t.unverified[veh]) ? 'Teyit edilmedi' : formatTL(t.fees[veh] || 0);
+    return `<div class="tl-item"><span class="tl-dot"></span><div class="tl-body"><div class="tl-name">${t.name}</div>${t.detail ? `<small class="tl-detail">${t.detail}</small>` : ''}</div><div class="tl-price">${priceTxt}</div></div>`;
+  }).join('');
+  return `<div class="tl-group">${title ? `<div class="tl-head"><span>${title}</span><b>${formatTL(subtotal)}</b></div>` : ''}<div class="tl"><div class="tl-end"><span class="tl-dot a"></span><div class="tl-body">${from}</div></div>${items}<div class="tl-end"><span class="tl-dot"></span><div class="tl-body">${to}</div></div></div></div>`;
+}
 let directionsRenderer = null;
 let map = null;
 let originAC = null, destAC = null;
@@ -1749,6 +1807,10 @@ function calculate() {
     let tollTotal = 0;
     tolls.forEach(t => { tollTotal += t.fees[selectedVehicle] || 0; });
     const unverifiedVeh = tolls.some(t => t.unverified && t.unverified[selectedVehicle]);
+    // Dönüş: aynı güzergâh ters yönde — gişe giriş/çıkış rolleri yeniden belirlenir
+    const tcR = tollCompute(runs.slice().reverse().map(x => x.slice().reverse()));
+    let retTollTotal = 0;
+    tcR.items.forEach(t => { retTollTotal += t.fees[selectedVehicle] || 0; });
 
     // Feribot tespiti — adımlar içinde FERRY tipi var mı?
     const hasFerry = leg.steps.some(s => s.travel_mode === 'FERRY'
@@ -1772,6 +1834,9 @@ function calculate() {
       tollTotal,
       total: fuelCost + tollTotal,
       tolls,
+      retTolls: tcR.items,
+      retTollTotal,
+      retUnknown: tollMarked && (tcR.unknown || tcR.items.some(t => t.unverified && t.unverified[selectedVehicle])),
       sec: leg.duration.value,
       tollMarked,
       unknownToll: tollMarked && (tc.unknown || unverifiedVeh),
@@ -1794,22 +1859,24 @@ function calculate() {
     });
 
     // Sonuçları güncelle
-    document.getElementById('routeDistance').textContent = r.leg.distance.text;
-    document.getElementById('routeDuration').textContent = r.duration;
-    document.getElementById('totalAmount').textContent = formatTL(r.total);
-    document.getElementById('totalSub').textContent =
-      `${r.leg.start_address.split(',')[0]} → ${r.leg.end_address.split(',')[0]}`;
-    document.getElementById('fuelCost').textContent = formatTL(r.fuelCost);
+    const T = tripTotals(r);
+    const nameA = r.leg.start_address.split(',')[0], nameB = r.leg.end_address.split(',')[0];
+    document.getElementById('routeDistance').textContent = T.rt ? `${Math.round(T.km).toLocaleString('tr-TR')} km (gidiş-dönüş)` : r.leg.distance.text;
+    document.getElementById('routeDuration').textContent = T.rt ? `${r.duration} (tek yön)` : r.duration;
+    document.getElementById('totalAmount').textContent = formatTL(T.total);
+    document.getElementById('totalSub').textContent = T.rt ? `${nameA} ⇄ ${nameB} · gidiş-dönüş` : `${nameA} → ${nameB}`;
+    document.getElementById('fuelCost').textContent = formatTL(T.fuel);
     document.getElementById('fuelDetail').textContent =
-      selectedFuel === 'elektrik'
-        ? `${r.distanceKm.toFixed(0)} km × ${consumption_val} kWh/100km × ${fuelPrice.toFixed(2)} ₺/kWh`
-        : `${r.distanceKm.toFixed(0)} km × ${consumption_val} L/100km × ${fuelPrice.toFixed(2)} ₺/L`;
-    document.getElementById('tollCost').textContent = formatTL(r.tollTotal);
+      (selectedFuel === 'elektrik'
+        ? `${T.km.toFixed(0)} km × ${consumption_val} kWh/100km × ${fuelPrice.toFixed(2)} ₺/kWh`
+        : `${T.km.toFixed(0)} km × ${consumption_val} L/100km × ${fuelPrice.toFixed(2)} ₺/L`) + (T.rt ? ' · gidiş-dönüş' : '');
+    document.getElementById('tollCost').textContent = formatTL(T.toll);
+    const nToll = r.tolls.length + (T.rt ? r.retTolls.length : 0);
     document.getElementById('tollDetail').textContent =
-      r.tolls.length > 0 ? `${r.tolls.length} ücretli kesim · KGM 2026 tarifesi`
+      nToll > 0 ? `${nToll} ücretli geçiş${T.rt ? ' (gidiş + dönüş)' : ''} · KGM 2026 tarifesi`
       : r.unknownToll ? 'Ücretli yol var, ücreti hesaplanamadı' : 'Ücretli geçiş yok';
-    if (r.unknownToll && r.tolls.length > 0) {
-      document.getElementById('tollDetail').textContent = `${r.tolls.length} ücretli kesim · bir kısmı hesaplanamadı`;
+    if (r.unknownToll && nToll > 0) {
+      document.getElementById('tollDetail').textContent = `${nToll} ücretli geçiş · bir kısmı hesaplanamadı`;
     }
 
     // Feribot uyarısı
@@ -1884,12 +1951,12 @@ function calculate() {
         ${ferryInfo}
       `;
 
-      donutFerry = ferryFee;
+      donutFerry = ferryFee * T.mult;
       // Hero bar güncelle
       if (ferryHeroBar && ferryFee > 0) {
         ferryHeroBar.style.display = 'block';
-        ferryTotalAmount.textContent = formatTL(r.total + ferryFee);
-        ferryTotalNote.textContent = `(yakıt + geçiş ${formatTL(r.total)} + feribot ${formatTL(ferryFee)})`;
+        ferryTotalAmount.textContent = formatTL(T.total + ferryFee * T.mult);
+        ferryTotalNote.textContent = `(yakıt + geçiş ${formatTL(T.total)} + feribot ${formatTL(ferryFee * T.mult)}${T.rt ? ', iki yön' : ''})`;
       } else if (ferryHeroBar) {
         ferryHeroBar.style.display = 'none';
       }
@@ -1898,23 +1965,21 @@ function calculate() {
       if (ferryHeroBar) ferryHeroBar.style.display = 'none';
     }
 
-    // Toll listesi
+    // Rota çizelgesi (başlangıç → geçişler → varış; gidiş-dönüşte dönüş ayrı)
     const tollList = document.getElementById('tollList');
     const tollListWrap = document.getElementById('tollListWrap');
     tollList.innerHTML = '';
+    const warnUnv = '<div class="fuel-note warn">Bu geçişin seçili araç sınıfı için tarifesi teyit edilemedi; toplama dahil değil, EKSİK olabilir.</div>';
+    const warnUnk = '<div class="fuel-note warn">Bu rotada tarife tablolarımızda bulunmayan ücretli yol kesimleri de olabilir; toplam EKSİK olabilir. Kesin ücret için işletmecinin sitesine bakın.</div>';
     if (r.tolls.length > 0) {
-      r.tolls.forEach(t => {
-        const veh = selectedVehicle;
-        const fee = t.fees[veh] || 0;
-        const priceTxt = (t.blocked && t.blocked[veh]) ? 'Geçemez' : (t.unverified && t.unverified[veh]) ? 'Teyit edilmedi' : formatTL(fee);
-        tollList.innerHTML += `
-          <div class="toll-item">
-            <span class="toll-name">${ic('road')} <span>${t.name}${t.detail ? `<small class="toll-detail">${t.detail}</small>` : ''}</span></span>
-            <span class="toll-price">${priceTxt}</span>
-          </div>`;
-      });
-      if (r.unverifiedVeh) tollList.innerHTML += '<div class="fuel-note warn">Bu geçişin seçili araç sınıfı için tarifesi teyit edilemedi; toplama dahil değil, EKSİK olabilir.</div>';
-      else if (r.unknownToll) tollList.innerHTML += '<div class="fuel-note warn">Bu rotada tarife tablolarımızda bulunmayan ücretli yol kesimleri de olabilir; toplam EKSİK olabilir. Kesin ücret için işletmecinin sitesine bakın.</div>';
+      const A = escHtml(nameA), B = escHtml(nameB);
+      if (T.rt) {
+        tollList.innerHTML = tollTimeline('Gidiş', A, B, r.tolls, r.tollTotal) + tollTimeline('Dönüş', B, A, r.retTolls, r.retTollTotal);
+      } else {
+        tollList.innerHTML = tollTimeline('', A, B, r.tolls, r.tollTotal);
+      }
+      if (r.unverifiedVeh) tollList.innerHTML += warnUnv;
+      else if (r.unknownToll || (T.rt && r.retUnknown)) tollList.innerHTML += warnUnk;
       tollListWrap.style.display = 'block';
     } else if (r.unknownToll) {
       tollList.innerHTML = '<div class="fuel-note warn">Google bu rotada ücretli yol gösteriyor ama bu geçişin ücretini listemizde bulamadık. Toplam bu kadar EKSİK olabilir; ücreti işletmecinin sitesinden kontrol edin.</div>';
@@ -1926,10 +1991,10 @@ function calculate() {
     // Kişi başı
     const perPersonRow = document.getElementById('perPersonRow');
     document.getElementById('resultSection').classList.toggle('has-pp', passengers > 1);
-    renderDonut(r, donutFerry);
+    renderDonut({ fuelCost: T.fuel, tollTotal: T.toll }, donutFerry);
     if (passengers > 1) {
       perPersonRow.style.display = 'flex';
-      document.getElementById('perPersonVal').textContent = formatTL(r.total / passengers) + ' / kişi';
+      document.getElementById('perPersonVal').textContent = formatTL(T.total / passengers) + ' / kişi';
     } else {
       perPersonRow.style.display = 'none';
     }
@@ -2150,31 +2215,37 @@ function calculate() {
     if (pickMarker) { pickMarker.setMap(null); pickMarker = null; }
     ensureMap();
 
-    // Rota tablarını oluştur
+    // Rota tablarını oluştur (yolculuk türü değişince yeniden çizilir)
     const tabsEl = document.getElementById('routesTabs');
-    tabsEl.innerHTML = '';
+    function renderTabs() {
+      tabsEl.innerHTML = '';
 
-    allRoutes.forEach((r, i) => {
-      const meta = (window._routeMeta || [])[i] || {};
-      const ferryTag = r.hasFerry ? ' ' + ic('ferry') : '';
-      const badge = meta.badge
-        ? `<div class="route-badge ${meta.badgeClass}">${meta.badge}${ferryTag}</div>`
-        : `<div class="route-badge badge-alt">${ic('route')} Alternatif${ferryTag}</div>`;
-      const color = meta.color || '#93a1af';
-      const tab = document.createElement('button');
-      const isFerryTab = meta.label === 'ferry';
-      tab.className = 'route-tab' + (isFerryTab ? ' ferry-tab' : '') + (i === 0 ? ' active' : '');
-      const displayTotal = r.hasFerry && isFerryTab
-        ? formatTL(r.total) + ' + ' + ic('ferry')
-        : formatTL(r.total);
-      tab.innerHTML = `
-        ${badge}
-        <div class="route-tab-price" style="color:var(--k-${meta.label || 'alt'})">${displayTotal}</div>
-        <div class="route-tab-km">${r.distanceKm.toFixed(0)} km · ${r.duration}</div>
-      `;
-      tab.onclick = () => renderRoute(i);
-      tabsEl.appendChild(tab);
-    });
+      allRoutes.forEach((r, i) => {
+        const meta = (window._routeMeta || [])[i] || {};
+        const ferryTag = r.hasFerry ? ' ' + ic('ferry') : '';
+        const badge = meta.badge
+          ? `<div class="route-badge ${meta.badgeClass}">${meta.badge}${ferryTag}</div>`
+          : `<div class="route-badge badge-alt">${ic('route')} Alternatif${ferryTag}</div>`;
+        const color = meta.color || '#93a1af';
+        const tab = document.createElement('button');
+        const isFerryTab = meta.label === 'ferry';
+        tab.className = 'route-tab' + (isFerryTab ? ' ferry-tab' : '') + (i === (window._activeRouteIdx || 0) ? ' active' : '');
+        const TT = tripTotals(r);
+        const displayTotal = r.hasFerry && isFerryTab
+          ? formatTL(TT.total) + ' + ' + ic('ferry')
+          : formatTL(TT.total);
+        tab.innerHTML = `
+          ${badge}
+          <div class="route-tab-price" style="color:var(--k-${meta.label || 'alt'})">${displayTotal}</div>
+          <div class="route-tab-km">${TT.km.toFixed(0)} km · ${TT.rt ? 'gidiş-dönüş' : r.duration}</div>
+        `;
+        tab.onclick = () => renderRoute(i);
+        tabsEl.appendChild(tab);
+      });
+    }
+    window._renderTabs = renderTabs;
+    window._activeRouteIdx = 0;
+    renderTabs();
 
     if (allRoutes.length > 1) {
       tabsEl.style.display = 'flex';
@@ -2488,6 +2559,16 @@ function applySkin(k, persist) {
   try { if (persist) localStorage.setItem('ym-skin', currentSkin()); } catch (e) {}
   repaintForTheme();
 }
+function setTrip(m) {
+  tripMode = m === 'round' ? 'round' : 'oneway';
+  document.querySelectorAll('#tripSeg button').forEach(b => {
+    const on = b.dataset.trip === tripMode;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  if (window._renderTabs && window._renderRoute) { window._renderTabs(); window._renderRoute(window._activeRouteIdx || 0); }
+}
+document.querySelectorAll('#tripSeg button').forEach(b => b.addEventListener('click', () => setTrip(b.dataset.trip)));
 function setHdrH() { const h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight + 'px'); }
 setHdrH(); window.addEventListener('resize', setHdrH);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(setHdrH);

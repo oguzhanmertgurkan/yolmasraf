@@ -1,0 +1,182 @@
+/* YolMasraf — bilgi sayfaları (Hakkında, SSS, Gizlilik). Renk değişkenleri ana sayfayla aynıdır. */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --radius:    18px;
+      --font-head: 'Figtree', system-ui, sans-serif;
+      --font-body: 'Figtree', system-ui, sans-serif;
+
+      /* Clean · koyu (varsayılan) */
+      --bg:        #0e1116;
+      --surface:   #161b22;
+      --surface2:  #1e252e;
+      --border:    #2a323d;
+      --accent:    #60a5fa;
+      --accent2:   #93c5fd;
+      --accent-vivid: #3b82f6;
+      --accent-rgb:  96,165,250;
+      --text:      #e6edf7;
+      --muted:     #8b9bb4;
+      --muted-rgb: 139,155,180;
+      --success:   #4ade80;
+      --success-rgb: 74,222,128;
+      --red:       #f87171;
+      --blue:      #7dd3fc;
+      --blue-rgb:  125,211,252;
+      --violet:    #a78bfa;
+      --violet-rgb: 167,139,250;
+      --warn:      #fbbf24;
+      --on-accent: #0b1220;
+      --overlay:   rgba(14,17,22,0.7);
+      --ferry-fg:  #67e8f9;
+      --ferry-fg2: #a5f3fc;
+      --ferry-bg:  rgba(34,211,238,0.10);
+      --ferry-bd:  rgba(34,211,238,0.45);
+      --sb:        #334155;
+      --sb-h:      #475569;
+      --k-best: #60a5fa; --k-fast: #60a5fa; --k-cheap: #4ade80; --k-free: #a78bfa; --k-ferry: #67e8f9; --k-alt: #8b9bb4;
+      --hero-a: transparent; --hero-b: transparent; --road-line: transparent;
+      --pop-accent: #1d4ed8; --pop-tint: #eff6ff;
+      --map-land: #151a21; --map-nature: #151a21; --map-text: #8b9bb4; --map-stroke: #0e1116;
+      --map-road: #232b35; --map-hwy: #33445a; --map-hwylabel: #93c5fd; --map-water: #0a0e13; --map-admin: #2a323d;
+      color-scheme: dark;
+    }
+    /* Clean · açık */
+    :root[data-theme="light"] {
+      --bg:        #f8fafc;
+      --surface:   #ffffff;
+      --surface2:  #f1f5f9;
+      --border:    #e2e8f0;
+      --accent:    #2563eb;
+      --accent2:   #1d4ed8;
+      --accent-vivid: #3b82f6;
+      --accent-rgb:  37,99,235;
+      --text:      #0f172a;
+      --muted:     #64748b;
+      --muted-rgb: 100,116,139;
+      --success:   #15803d;
+      --success-rgb: 21,128,61;
+      --red:       #dc2626;
+      --blue:      #0369a1;
+      --blue-rgb:  3,105,161;
+      --violet:    #7c3aed;
+      --violet-rgb: 124,58,237;
+      --warn:      #b45309;
+      --on-accent: #ffffff;
+      --overlay:   rgba(248,250,252,0.78);
+      --ferry-fg:  #0e7490;
+      --ferry-fg2: #155e75;
+      --ferry-bg:  rgba(14,116,144,0.09);
+      --ferry-bd:  rgba(14,116,144,0.4);
+      --sb:        #cbd5e1;
+      --sb-h:      #94a3b8;
+      --k-best: #2563eb; --k-fast: #2563eb; --k-cheap: #15803d; --k-free: #7c3aed; --k-ferry: #0e7490; --k-alt: #94a3b8;
+      --map-land: #eef2f6; --map-nature: #e4ebe0; --map-text: #64748b; --map-stroke: #ffffff;
+      --map-road: #ffffff; --map-hwy: #cfe0fb; --map-hwylabel: #1d4ed8; --map-water: #bcd7ee; --map-admin: #cbd5e1;
+      color-scheme: light;
+    }
+    /* Yol (Road Trip) · koyu */
+    :root[data-skin="yol"] {
+      --bg:        #0f172a;
+      --surface:   #172033;
+      --surface2:  #1e293b;
+      --border:    #2b3a52;
+      --accent:    #fb923c;
+      --accent2:   #fdba74;
+      --accent-vivid: #f97316;
+      --accent-rgb:  251,146,60;
+      --text:      #f1f5f9;
+      --muted:     #94a3b8;
+      --muted-rgb: 148,163,184;
+      --success:   #4ade80;
+      --success-rgb: 74,222,128;
+      --red:       #f87171;
+      --blue:      #60a5fa;
+      --blue-rgb:  96,165,250;
+      --violet:    #a78bfa;
+      --violet-rgb: 167,139,250;
+      --warn:      #fbbf24;
+      --on-accent: #0f172a;
+      --overlay:   rgba(15,23,42,0.7);
+      --ferry-fg:  #93c5fd;
+      --ferry-fg2: #bfdbfe;
+      --ferry-bg:  rgba(59,130,246,0.14);
+      --ferry-bd:  rgba(96,165,250,0.5);
+      --sb:        #334155;
+      --sb-h:      #475569;
+      --k-best: #fb923c; --k-fast: #fb923c; --k-cheap: #4ade80; --k-free: #a78bfa; --k-ferry: #60a5fa; --k-alt: #94a3b8;
+      --hero-a: #1e293b; --hero-b: #3a2416; --road-line: rgba(251,146,60,0.55);
+      --pop-accent: #9a3412; --pop-tint: #fff1e6;
+      --map-land: #172033; --map-nature: #172033; --map-text: #94a3b8; --map-stroke: #0f172a;
+      --map-road: #26334a; --map-hwy: #3a4a66; --map-hwylabel: #fdba74; --map-water: #0b1220; --map-admin: #2b3a52;
+    }
+    /* Yol (Road Trip) · açık */
+    :root[data-skin="yol"][data-theme="light"] {
+      --bg:        #f7f5f2;
+      --surface:   #ffffff;
+      --surface2:  #f3efe9;
+      --border:    #e7e0d6;
+      --accent:    #c2410c;
+      --accent2:   #9a3412;
+      --accent-vivid: #f97316;
+      --accent-rgb:  194,65,12;
+      --text:      #1c1917;
+      --muted:     #78716c;
+      --muted-rgb: 120,113,108;
+      --success:   #15803d;
+      --success-rgb: 21,128,61;
+      --red:       #dc2626;
+      --blue:      #1d4ed8;
+      --blue-rgb:  29,78,216;
+      --violet:    #7c3aed;
+      --violet-rgb: 124,58,237;
+      --warn:      #b45309;
+      --on-accent: #ffffff;
+      --overlay:   rgba(247,245,242,0.78);
+      --ferry-fg:  #1e40af;
+      --ferry-fg2: #1e3a8a;
+      --ferry-bg:  rgba(37,99,235,0.09);
+      --ferry-bd:  rgba(37,99,235,0.4);
+      --sb:        #d6cfc4;
+      --sb-h:      #b8ae9f;
+      --k-best: #c2410c; --k-fast: #c2410c; --k-cheap: #15803d; --k-free: #7c3aed; --k-ferry: #1d4ed8; --k-alt: #a8a29e;
+      --hero-a: #fff6ee; --hero-b: #ffdfc2; --road-line: rgba(194,65,12,0.45);
+      --map-land: #efebe4; --map-nature: #e4e8d4; --map-text: #6b6259; --map-stroke: #faf8f4;
+      --map-road: #ffffff; --map-hwy: #fcd9b0; --map-hwylabel: #9a3412; --map-water: #b7d3e8; --map-admin: #d9d0c2;
+    }
+
+
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; line-height: 1.65; }
+header.top { display: flex; align-items: center; gap: 12px; padding: 14px 24px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.logo { margin-right: auto; font-weight: 800; font-size: 1.3rem; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; }
+.logo span.n { color: var(--accent); }
+.logo-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
+.logo-mark svg { width: 28px; height: 28px; overflow: visible; }
+.lg-road { fill: none; stroke: var(--on-accent); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 0.1 5.2; }
+.lg-coin { fill: var(--on-accent); }
+.lg-t { fill: var(--accent); font: 800 12.5px Arial, Helvetica, sans-serif; }
+.back { color: var(--accent); font-weight: 700; text-decoration: none; font-size: 0.9rem; }
+.back:hover { text-decoration: underline; }
+main.page { flex: 1; width: 100%; max-width: 780px; margin: 0 auto; padding: 36px 20px 56px; }
+h1 { font-size: 1.9rem; line-height: 1.2; letter-spacing: -0.4px; margin-bottom: 8px; }
+.lead { color: var(--muted); margin-bottom: 28px; }
+h2 { font-size: 1.15rem; margin: 30px 0 8px; }
+p, li { font-size: 0.97rem; }
+p + p { margin-top: 10px; }
+ul { padding-left: 22px; margin: 8px 0; display: flex; flex-direction: column; gap: 6px; }
+a { color: var(--accent); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin: 12px 0; }
+.note { background: rgba(var(--accent-rgb), 0.08); border: 1px solid rgba(var(--accent-rgb), 0.3); border-radius: 12px; padding: 12px 16px; margin: 16px 0; font-size: 0.92rem; }
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 0 16px; margin: 10px 0; }
+summary { cursor: pointer; font-weight: 700; padding: 14px 0; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: '+'; color: var(--accent); font-size: 1.3rem; line-height: 1; }
+details[open] summary::after { content: '–'; }
+details p { padding-bottom: 14px; color: var(--muted); }
+table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 0.8rem; }
+footer.foot { border-top: 1px solid var(--border); background: var(--surface); padding: 18px 20px 22px; text-align: center; font-size: 0.8rem; color: var(--muted); }
+footer.foot nav { display: flex; gap: 6px 22px; justify-content: center; flex-wrap: wrap; margin-bottom: 6px; }
+footer.foot a { color: var(--text); font-weight: 600; text-decoration: none; }
+footer.foot a:hover { color: var(--accent); text-decoration: underline; }
+@media (max-width: 600px) { header.top { padding: 12px 16px; } h1 { font-size: 1.55rem; } main.page { padding-top: 26px; } }

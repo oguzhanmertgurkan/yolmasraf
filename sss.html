@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0e1116" />
+<title>Sıkça sorulan sorular — YolMasraf</title>
+<meta name="description" content="YolMasraf hakkında sık sorulan sorular: yakıt ve geçiş ücreti hesabı, gidiş-dönüş, feribot, doğruluk ve gizlilik." />
+<script>(function(){var t=null,k=null;try{t=localStorage.getItem('ym-theme');k=localStorage.getItem('ym-skin');}catch(e){}
+if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}
+if(k!=='clean'&&k!=='yol')k='clean';var r=document.documentElement;r.setAttribute('data-theme',t);r.setAttribute('data-skin',k);
+var C={'clean-light':'#f8fafc','clean-dark':'#0e1116','yol-light':'#f7f5f2','yol-dark':'#0f172a'};var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',C[k+'-'+t]);})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/sayfa.css" />
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/"><span class="logo-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path class="lg-road" d="M5 27 C 5 17, 27 20, 27 9"/><circle class="lg-coin" cx="6" cy="26" r="3"/><circle class="lg-coin" cx="23.5" cy="9.5" r="8"/><text class="lg-t" x="23.5" y="14" text-anchor="middle">₺</text></svg></span><span>Yol<span class="n">Masraf</span></span></a>
+  <a class="back" href="/">← Hesaplayıcıya dön</a>
+</header>
+<main class="page">
+<h1>Sıkça sorulan sorular</h1>
+<p class="lead">YolMasraf'ın nasıl çalıştığı ve rakamlara ne kadar güvenebileceğiniz hakkında kısa cevaplar.</p>
+<details><summary>Hesaplanan tutar kesin mi?</summary><p>Hayır, tahmindir. Mesafe ve rota Google Haritalar&#x27;dan, geçiş ücretleri KGM 2026 tarifelerinden, yakıt fiyatı ise ortalama pompa fiyatından gelir. Aracınızın gerçek tüketimi, trafik ve seçtiğiniz rota sonucu değiştirir. Karar vermeden önce resmî kaynaklardan teyit edin.</p></details>
+<details><summary>Yakıt masrafı nasıl hesaplanıyor?</summary><p>Mesafe (km) × tüketim (L/100 km) ÷ 100 × yakıt fiyatı (₺/L). Elektrikli araçlarda litre yerine kWh ve şarj fiyatı kullanılır. Tüketim ve fiyat alanlarını kendi aracınıza göre değiştirebilirsiniz.</p></details>
+<details><summary>Geçiş ücretleri nasıl bulunuyor?</summary><p>Google rotasında &quot;ücretli yol&quot; olarak işaretlenen kesimler, KGM&#x27;nin giriş × çıkış gişesi tablolarıyla eşleştirilir. Köprüler (15 Temmuz, FSM, Yavuz Sultan Selim, Osmangazi, 1915 Çanakkale) ve otoyollar ayrı ayrı toplanır. Tablomuzda olmayan bir ücretli yol görülürse toplamın eksik olabileceği açıkça uyarılır.</p></details>
+<details><summary>Gidiş-dönüş nasıl hesaplanıyor?</summary><p>Yakıt iki katına çıkar. Dönüşteki geçiş ücretleri, aynı güzergâhın ters yönü için ayrıca hesaplanır; Gidiş ve Dönüş ayrı ayrı listelenir. Dönüşte farklı bir yol seçerseniz gerçek tutar değişebilir.</p></details>
+<details><summary>Kişi başı maliyet neyi kapsıyor?</summary><p>Toplam yakıt ve geçiş ücretinin yolcu sayısına bölünmüş halidir. Feribot bileti dahil değildir.</p></details>
+<details><summary>Feribot ücretleri neden toplama dahil değil?</summary><p>Feribot tarifeleri sık değişir; hatta saate ve araç boyuna göre de farklılaşır. Rota feribot içeriyorsa bunu belirtir, bazı hatlar için tahmini bilet fiyatını ayrıca gösteririz. Güncel fiyat için İDO veya BUDO gibi işletmecinin sitesine bakın.</p></details>
+<details><summary>Hangi araç türleri destekleniyor?</summary><p>Binek, SUV/4x4, minibüs, motosiklet ve kamyon. SUV binek sınıfında, kamyon ise 4. sınıfta (4–5 akslı) hesaplanır.</p></details>
+<details><summary>Neden bir geçişte &quot;teyit edilmedi&quot; yazıyor?</summary><p>Seçtiğiniz araç sınıfı için resmî tarifeyi henüz doğrulayamadığımız durumlarda uydurma bir rakam yazmak yerine bunu belirtiyoruz ve o kalemi toplama katmıyoruz.</p></details>
+<details><summary>Şarj istasyonu bilgileri güvenilir mi?</summary><p>İstasyon konumları Open Charge Map&#x27;ten gelir ve topluluk kaynaklıdır; eksik ya da eski kayıtlar olabilir. Ücretler operatör tarifelerine göre tahminidir, şarj etmeden önce operatörün uygulamasından teyit edin.</p></details>
+<details><summary>Verilerim saklanıyor mu?</summary><p>Hesap açmanız gerekmez ve girdiğiniz adresleri kendi sunucumuzda kaydetmeyiz. Ayrıntılar için Gizlilik sayfasına bakın.</p></details>
+<details><summary>Yanlış bir fiyat gördüm, ne yapmalıyım?</summary><p>Bize güzergâhı, araç türünü ve gördüğünüz tutarı yazın. Tarifeler hesaplayıcının en kritik verisidir; hataları hızla düzeltiriz.</p></details>
+<p style="margin-top:22px">Sorunuzun cevabı burada yoksa: [iletişim e-postası eklenecek]</p>
+</main>
+<footer class="foot">
+  <nav><a href="/">Hesaplayıcı</a><a href="/hakkinda.html">Hakkında</a><a href="/sss.html">Sıkça sorulan sorular</a><a href="/gizlilik.html">Gizlilik ve KVKK</a></nav>
+  <div>© YolMasraf · Fiyatlar tahminidir.</div>
+</footer>
+</body>
+</html>

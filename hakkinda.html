@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0e1116" />
+<title>Hakkında — YolMasraf</title>
+<meta name="description" content="YolMasraf, Türkiye için yakıt, otoyol/köprü geçiş ücreti ve şarj maliyetini hesaplayan bağımsız bir yol masrafı hesaplayıcısıdır." />
+<script>(function(){var t=null,k=null;try{t=localStorage.getItem('ym-theme');k=localStorage.getItem('ym-skin');}catch(e){}
+if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}
+if(k!=='clean'&&k!=='yol')k='clean';var r=document.documentElement;r.setAttribute('data-theme',t);r.setAttribute('data-skin',k);
+var C={'clean-light':'#f8fafc','clean-dark':'#0e1116','yol-light':'#f7f5f2','yol-dark':'#0f172a'};var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',C[k+'-'+t]);})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/sayfa.css" />
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="/"><span class="logo-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path class="lg-road" d="M5 27 C 5 17, 27 20, 27 9"/><circle class="lg-coin" cx="6" cy="26" r="3"/><circle class="lg-coin" cx="23.5" cy="9.5" r="8"/><text class="lg-t" x="23.5" y="14" text-anchor="middle">₺</text></svg></span><span>Yol<span class="n">Masraf</span></span></a>
+  <a class="back" href="/">← Hesaplayıcıya dön</a>
+</header>
+<main class="page">
+
+<h1>Hakkında</h1>
+<p class="lead">YolMasraf, yola çıkmadan önce yolculuğun gerçek maliyetini görmeniz için yapılmış ücretsiz bir hesaplayıcıdır.</p>
+
+<h2>Ne yapar?</h2>
+<p>İki nokta arasındaki rotayı bulur; yakıt (veya elektrik) masrafını, OGS/HGS ile geçilen otoyol, köprü ve tünel ücretlerini toplar ve yolcu sayısına göre kişi başı tutarı gösterir. Tek yön ya da gidiş-dönüş hesaplayabilir, alternatif rotaları maliyet ve süreye göre karşılaştırır.</p>
+
+<h2>Rakamlar nereden geliyor?</h2>
+<ul>
+<li><b>Rota ve mesafe:</b> Google Haritalar.</li>
+<li><b>Geçiş ücretleri:</b> Karayolları Genel Müdürlüğü'nün (KGM) yayımladığı 2026 tarife tabloları. Rotanın hangi gişelerden geçtiği, Google'ın verdiği güzergâhtan tespit edilir; ücret giriş ve çıkış gişesine göre hesaplanır. Otoyol ve köprü tarifeleri binek, minibüs, kamyon ve motosiklet sınıfları için ayrı ayrı uygulanır.</li>
+<li><b>Yakıt fiyatları:</b> Akaryakıt dağıtım şirketlerinin yayımladığı güncel fiyatların Türkiye ortalaması; birkaç saatte bir yenilenir. Fiyatı kendiniz de değiştirebilirsiniz.</li>
+<li><b>Şarj istasyonları:</b> Open Charge Map (topluluk kaynaklı) ve operatörlerin yayımladığı tarifeler.</li>
+</ul>
+
+<h2>Bilinen sınırlar</h2>
+<div class="note">Sonuçlar <b>tahmindir</b>. Kesin ücret için ilgili işletmecinin (KGM, İDO, otoyol işletmecileri) güncel tarifesine bakın.</div>
+<ul>
+<li>Feribot bileti toplama dahil değildir; yalnızca bazı hatlar için tahmini fiyat gösterilir.</li>
+<li>Kamyon/tır için 4. sınıf (4–5 akslı) varsayılır.</li>
+<li>Avrasya Tüneli'nde minibüs ve motosiklet tarifesi henüz doğrulanmamıştır; bu araçlarda "teyit edilmedi" uyarısı görürsünüz.</li>
+<li>İstanbul Kuzey Çevre Otoyolu'ndaki bazı serbest geçiş istasyonları henüz hesaba katılmamaktadır.</li>
+<li>Google'ın seçtiği rota trafik durumuna göre değişebilir; bu da yakıt ve geçiş tutarını etkiler.</li>
+</ul>
+<p>Bir fiyatın yanlış olduğunu düşünüyorsanız bize yazın; düzeltmek önceliğimizdir.</p>
+
+<h2>Bağımsızlık</h2>
+<p>YolMasraf bağımsız bir projedir; KGM, Google, akaryakıt şirketleri veya herhangi bir işletmeci ile resmî bir bağlantısı yoktur. Marka adları yalnızca kaynağı belirtmek için anılır.</p>
+
+<h2>İletişim</h2>
+<p>Görüş, hata bildirimi ve öneriler için: [iletişim e-postası eklenecek]</p>
+
+</main>
+<footer class="foot">
+  <nav><a href="/">Hesaplayıcı</a><a href="/hakkinda.html">Hakkında</a><a href="/sss.html">Sıkça sorulan sorular</a><a href="/gizlilik.html">Gizlilik ve KVKK</a></nav>
+  <div>© YolMasraf · Fiyatlar tahminidir.</div>
+</footer>
+</body>
+</html>
