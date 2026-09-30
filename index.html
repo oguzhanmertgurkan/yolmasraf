@@ -1626,7 +1626,7 @@ function configureFuelUi(resetConsumption) {
     const dt = fmtDateTR((fuelMeta.dates || {})[selectedFuel]);
     if (fuelMeta.live && !(fuelMeta.fb || []).includes(selectedFuel)) {
       note.className = 'fuel-note';
-      note.innerHTML = `Güncel pompa fiyatı (Türkiye ort.)${dt ? ' · <b>' + dt + '</b>' : ''}. İlinize göre birkaç TL değişebilir; isterseniz düzeltin.`;
+      note.innerHTML = `Güncel pompa fiyatı (Türkiye ort.)${dt ? ' · <b>' + dt + '</b>' : ''}. İlinize göre birkaç TL değişebilir; bölgenizdeki fiyatı yazarak güncelleyebilirsiniz.`;
     } else {
       note.className = 'fuel-note warn';
       note.innerHTML = `Canlı fiyat alınamadı; son bilinen değer${dt ? ' (' + dt + ')' : ''} gösteriliyor. Lütfen kontrol edin.`;
