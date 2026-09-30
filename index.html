@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#131a21" />
   <title>YolMasraf — Türkiye Yol Masrafı Hesaplayıcı</title>
+  <script>
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('ym-theme'); } catch (e) {}
+    if (t !== 'light' && t !== 'dark') {
+      t = (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute('content', t === 'light' ? '#f3efe8' : '#131a21');
+  })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -20,21 +32,56 @@
       --accent2:   #ecd3a2;
       --text:      #e7ebef;
       --muted:     #93a1af;
-      --success:   #78cdb0;
+      --success:   var(--success);
       --red:       #e59a9a;
       --blue:      #86b3e6;
       --violet:    #b4a4e6;
       --radius:    18px;
       --font-head: 'Figtree', system-ui, sans-serif;
       --font-body: 'Figtree', system-ui, sans-serif;
+      --warn:      #fbbf77;
+      --on-accent: #131a21;
+      --overlay:   rgba(19,26,33,0.7);
+      --ferry-fg:  #a9c8ee;
+      --ferry-fg2: #cfe0f5;
+      --ferry-bg:  rgba(59,130,246,0.12);
+      --ferry-bd:  rgba(59,130,246,0.5);
+      --sb:        #3b4957;
+      --sb-h:      #55677a;
+      --k-best: #dcb87a; --k-fast: #dcb87a; --k-cheap: var(--success); --k-free: #b4a4e6; --k-ferry: #86b3e6; --k-alt: #93a1af;
       color-scheme: dark;
     }
+    :root[data-theme="light"] {
+      --bg:        #f3efe8;
+      --surface:   #fbf9f5;
+      --surface2:  #f0ebe2;
+      --border:    #ddd5c7;
+      --accent:    #9a6b1c;
+      --accent2:   #7a5212;
+      --text:      #222a33;
+      --muted:     #66727f;
+      --success:   #1f8068;
+      --red:       #c0504f;
+      --blue:      #2c69ad;
+      --violet:    #6b52c2;
+      --warn:      #a15c00;
+      --on-accent: #ffffff;
+      --overlay:   rgba(243,239,232,0.78);
+      --ferry-fg:  #1f4f88;
+      --ferry-fg2: #163b66;
+      --ferry-bg:  rgba(44,105,173,0.09);
+      --ferry-bd:  rgba(44,105,173,0.4);
+      --sb:        #cfc6b5;
+      --sb-h:      #b3a891;
+      --k-best: #a5731e; --k-fast: #a5731e; --k-cheap: #1f8068; --k-free: #6b52c2; --k-ferry: #2c69ad; --k-alt: #7a8794;
+      color-scheme: light;
+    }
 
-    * { scrollbar-width: thin; scrollbar-color: #3b4957 transparent; }
+    * { scrollbar-width: thin; scrollbar-color: var(--sb) transparent; }
     ::-webkit-scrollbar { width: 10px; height: 10px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #3b4957; border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
-    ::-webkit-scrollbar-thumb:hover { background: #55677a; background-clip: content-box; }
+    ::-webkit-scrollbar-thumb { background: var(--sb); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--sb-h); background-clip: content-box; }
 
     .i { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; vertical-align: -0.2em; }
     .vehicle-btn .icon { display: flex; }
@@ -55,12 +102,13 @@
     header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 12px;
       padding: 16px 28px;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
     }
     .logo {
+      margin-right: auto;
       font-family: var(--font-head);
       font-size: 1.35rem;
       font-weight: 800;
@@ -269,7 +317,7 @@
       width: 100%;
       padding: 15px;
       background: var(--accent);
-      color: #131a21;
+      color: var(--on-accent);
       border: none;
       border-radius: 14px;
       font-family: var(--font-head);
@@ -423,7 +471,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(19,26,33,0.7);
+      background: var(--overlay);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -493,7 +541,7 @@
     .ac-main b { color: var(--accent); font-weight: 600; }
     .ac-sub { color: var(--muted); font-size: 0.74rem; margin-top: 1px; }
     .ac-msg { padding: 12px 14px; font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
-    .route-hint { display: none; margin-top: 8px; font-size: 0.78rem; line-height: 1.5; color: #e59a9a; }
+    .route-hint { display: none; margin-top: 8px; font-size: 0.78rem; line-height: 1.5; color: var(--red); }
     .route-hint.visible { display: block; }
 
     .location-btn {
@@ -557,11 +605,11 @@
     }
     .badge-fast  { background: rgba(220,184,122,0.2);  color: var(--accent); }
     .badge-cheap { background: rgba(120,205,176,0.2);  color: var(--success); }
-    .badge-ferry { background: rgba(134,179,230,0.2);  color: #86b3e6; }
-    .badge-free  { background: rgba(180,164,230,0.2); color: #b4a4e6; }
+    .badge-ferry { background: rgba(134,179,230,0.2);  color: var(--blue); }
+    .badge-free  { background: rgba(180,164,230,0.2); color: var(--violet); }
     .badge-alt   { background: rgba(147,161,175,0.2); color: var(--muted); }
-    .route-tab.ferry-tab { border-color: #86b3e6; }
-    .route-tab.ferry-tab.active { background: rgba(134,179,230,0.12); color: #86b3e6; }
+    .route-tab.ferry-tab { border-color: var(--blue); }
+    .route-tab.ferry-tab.active { background: rgba(134,179,230,0.12); color: var(--blue); }
     .route-tab-km    { font-size: 0.72rem; color: var(--muted); margin-top: 2px; font-weight: 400; }
     .route-tab-price { font-size: 0.92rem; font-weight: 700; margin-top: 2px; }
 
@@ -582,6 +630,30 @@
     .location-btn.loading { animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
+    .theme-btn {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .theme-btn .i { width: 19px; height: 19px; }
+    :root[data-theme="dark"] .theme-btn .moon, :root[data-theme="light"] .theme-btn .sun { display: none; }
+    #vehicleGrid { grid-template-columns: repeat(6, 1fr); }
+    #vehicleGrid .vehicle-btn { grid-column: span 2; }
+    #vehicleGrid .vehicle-btn:nth-child(n+4) { grid-column: span 3; }
+    .perkm { font-size: 0.8rem; color: var(--text); margin-top: 8px; font-weight: 600; }
+    .perkm span { color: var(--muted); font-weight: 500; }
+    .flow-done { opacity: 0.5; transition: opacity 0.25s; }
+    .pick-btn.active { border-color: var(--accent); background: rgba(220,184,122,0.16); color: var(--accent); }
+    .pick-banner {
+      display: none; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 6;
+      background: var(--surface); color: var(--text); border: 1px solid var(--accent); border-radius: 999px;
+      padding: 8px 8px 8px 16px; font-size: 0.82rem; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      align-items: center; gap: 10px; white-space: nowrap; max-width: calc(100% - 24px);
+    }
+    .pick-banner.on { display: flex; }
+    .pick-banner button { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 999px; padding: 5px 12px; font-family: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
     .fuel-items { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .fuel-item { white-space: nowrap; }
     .fuel-sep { opacity: 0.4; }
@@ -589,9 +661,10 @@
     .map-back, .map-jump { display: none; }
 
     @media (max-width: 768px) {
-      header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+      header { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 12px 16px; }
       .logo { font-size: 1.2rem; }
-      .fuel-badge { width: 100%; justify-content: center; padding: 7px 12px; font-size: 0.74rem; }
+      .theme-btn { grid-column: 2; grid-row: 1; }
+      .fuel-badge { grid-column: 1 / -1; grid-row: 2; width: 100%; justify-content: center; padding: 7px 12px; font-size: 0.74rem; }
       .fuel-items { gap: 6px; flex-wrap: nowrap; }
       .fuel-badge strong { font-size: 0.84rem; }
       main { grid-template-columns: 1fr; }
@@ -606,7 +679,7 @@
       .map-jump {
         display: flex; align-items: center; justify-content: center; gap: 8px;
         width: 100%; padding: 12px; border-radius: 14px; cursor: pointer;
-        background: rgba(120,205,176,0.12); border: 1.5px solid #78cdb0; color: #78cdb0;
+        background: rgba(120,205,176,0.12); border: 1.5px solid var(--success); color: var(--success);
         font-family: inherit; font-size: 0.9rem; font-weight: 700;
       }
       #map-container { height: 70vh; min-height: 380px; }
@@ -629,7 +702,7 @@
     /* ── ELEKTRİKLİ / YAKIT NOTU ── */
     .fuel-note { font-size: 0.7rem; color: var(--muted); line-height: 1.5; margin-top: 6px; }
     .fuel-note b { color: var(--text); font-weight: 600; }
-    .fuel-note.warn { color: #fbbf77; }
+    .fuel-note.warn { color: var(--warn); }
     .ev-presets { display: none; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
     .ev-presets.visible { display: flex; }
     .ev-preset {
@@ -643,20 +716,20 @@
       background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
       border-radius: 999px; padding: 4px 11px; font-size: 0.72rem; cursor: pointer; font-family: inherit;
     }
-    .ev-chip.active { border-color: #78cdb0; color: #78cdb0; background: rgba(120,205,176,0.1); }
+    .ev-chip.active { border-color: var(--success); color: var(--success); background: rgba(120,205,176,0.1); }
     .ev-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; }
     .ev-item {
       background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
       padding: 11px 13px; cursor: pointer; text-align: left; color: var(--text); font-family: inherit; width: 100%;
     }
-    .ev-item:hover { border-color: #78cdb0; }
+    .ev-item:hover { border-color: var(--success); }
     .ev-top { display: flex; justify-content: space-between; gap: 8px; font-size: 0.84rem; font-weight: 600; }
     .ev-km { color: var(--muted); font-weight: 500; font-size: 0.72rem; white-space: nowrap; }
     .ev-sub { color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
     .ev-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
     .ev-tag { font-size: 0.7rem; padding: 2px 7px; border-radius: 6px; font-weight: 600; }
-    .ev-tag.dc { background: rgba(120,205,176,0.15); color: #78cdb0; }
-    .ev-tag.ac { background: rgba(134,179,230,0.15); color: #86b3e6; }
+    .ev-tag.dc { background: rgba(120,205,176,0.15); color: var(--success); }
+    .ev-tag.ac { background: rgba(134,179,230,0.15); color: var(--blue); }
     .ev-price { margin-top: 6px; font-size: 0.74rem; color: var(--accent2); }
     .ev-status { font-size: 0.78rem; color: var(--muted); line-height: 1.5; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; }
   </style>
@@ -672,6 +745,8 @@
   <symbol id="i-pump" viewBox="0 0 24 24"><path d="M5 20.5V6a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v14.5M4 20.5h11M5 10h9M14 8.5h2a1.6 1.6 0 0 1 1.6 1.6V15a1.7 1.7 0 0 0 3.4 0V9.2l-2.6-2.6"/></symbol>
   <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5c3.2 3.8 5.4 6.4 5.4 9.4a5.4 5.4 0 0 1-10.8 0c0-3 2.2-5.6 5.4-9.4z"/></symbol>
   <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c.4 3.2-3.6 5-3.6 9.2a3.7 3.7 0 0 0 7.2 1.2c.6-2-.4-3.4-1.4-4.4-.2 1.3-.8 2-1.6 2.2.6-2.8-.2-5.4-.6-8.2z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></symbol>
   <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13.2 3 5.8 13.2h5.3L10.3 21l7.9-10.6h-5.4z"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s6.5-5.7 6.5-11.1a6.5 6.5 0 0 0-13 0C5.5 15.300 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.3"/></symbol>
   <symbol id="i-origin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" fill="currentColor" stroke="none"/></symbol>
@@ -710,6 +785,10 @@
       <span class="fuel-unit">₺/L</span>
     </div>
   </div>
+  <button type="button" class="theme-btn" id="themeBtn" aria-label="Açık / koyu tema" title="Açık / koyu tema">
+    <svg class="i sun" aria-hidden="true"><use href="#i-sun"/></svg>
+    <svg class="i moon" aria-hidden="true"><use href="#i-moon"/></svg>
+  </button>
 </header>
 
 <!-- MAIN -->
@@ -734,6 +813,7 @@
             <div class="ac-list" id="originList" role="listbox"></div>
           </div>
           <button class="location-btn" id="locationBtn" onclick="useMyLocation()" title="Mevcut konumumu kullan" style="display:none"><svg class="i" aria-hidden="true"><use href="#i-locate"/></svg></button>
+          <button type="button" class="location-btn pick-btn" id="pickOrigin" onclick="startPick('origin')" title="Haritadan seç" aria-label="Başlangıcı haritadan seç"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg></button>
         </div>
         <div class="input-row">
           <div class="input-icon end"><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg></div>
@@ -741,15 +821,16 @@
             <input id="destination" class="pac-input" type="text" placeholder="Nereye? (şehir veya adres)" autocomplete="off" spellcheck="false" />
             <div class="ac-list" id="destinationList" role="listbox"></div>
           </div>
+          <button type="button" class="location-btn pick-btn" id="pickDestination" onclick="startPick('destination')" title="Haritadan seç" aria-label="Varışı haritadan seç"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg></button>
         </div>
       </div>
       <div class="route-hint" id="routeHint"></div>
     </div>
 
     <!-- VEHICLE TYPE -->
-    <div>
+    <div id="secVehicle">
       <div class="section-label">Araç Tipi</div>
-      <div class="vehicle-grid">
+      <div class="vehicle-grid" id="vehicleGrid">
         <button class="vehicle-btn active" data-type="car" onclick="selectVehicle(this)">
           <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-car"/></svg></span>
           <span class="label">Binek</span>
@@ -770,15 +851,11 @@
           <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-truck"/></svg></span>
           <span class="label">Kamyon</span>
         </button>
-        <button class="vehicle-btn" data-type="bus" onclick="selectVehicle(this)">
-          <span class="icon"><svg class="i" aria-hidden="true"><use href="#i-bus"/></svg></span>
-          <span class="label">Otobüs</span>
-        </button>
       </div>
     </div>
 
     <!-- FUEL TYPE -->
-    <div>
+    <div id="secFuel">
       <div class="section-label">Yakıt Türü</div>
       <div class="vehicle-grid" style="grid-template-columns:repeat(4,1fr)">
         <button class="vehicle-btn active" data-fuel="benzin" onclick="selectFuel(this)">
@@ -801,7 +878,7 @@
     </div>
 
     <!-- PARAMS -->
-    <div class="field-group">
+    <div class="field-group" id="secParams">
       <div class="section-label">Araç Parametreleri</div>
 
       <div class="field">
@@ -810,7 +887,7 @@
           <span class="field-val"><span id="consumptionVal">8</span> <span id="consUnit">L/100km</span></span>
         </div>
         <input type="range" id="consumption" min="3" max="35" value="8" step="0.5"
-          oninput="document.getElementById('consumptionVal').textContent = this.value" />
+          oninput="document.getElementById('consumptionVal').textContent = this.value; updatePerKm()" />
       </div>
 
       <div class="field">
@@ -822,6 +899,7 @@
           <button type="button" class="ev-preset" onclick="setEvPrice('ac')" id="evPresetAc">AC ort.</button>
           <button type="button" class="ev-preset" onclick="setEvPrice('dc')" id="evPresetDc">DC ort.</button>
         </div>
+        <div class="perkm" id="perKmNote"></div>
         <div class="fuel-note" id="fuelNote"></div>
       </div>
     </div>
@@ -855,11 +933,11 @@
         <div class="total-label">Toplam Tahmini Maliyet</div>
         <div class="total-amount" id="totalAmount">0 ₺</div>
         <div class="total-sub" id="totalSub"></div>
-        <div id="ferryHeroBar" style="display:none; margin-top:12px; padding:10px 14px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.4); border-radius:10px;">
-          <div style="font-size:0.8rem; font-weight:600; color:#a9c8ee; margin-bottom:4px; display:flex; align-items:center; gap:6px;"><svg class="i" aria-hidden="true"><use href="#i-ferry"/></svg> Feribot dahil tahmini toplam</div>
+        <div id="ferryHeroBar" style="display:none; margin-top:12px; padding:10px 14px; background:var(--ferry-bg); border:1px solid var(--ferry-bd); border-radius:10px;">
+          <div style="font-size:0.8rem; font-weight:600; color:var(--ferry-fg); margin-bottom:4px; display:flex; align-items:center; gap:6px;"><svg class="i" aria-hidden="true"><use href="#i-ferry"/></svg> Feribot dahil tahmini toplam</div>
           <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">
-            <span id="ferryTotalAmount" style="font-family:'Space Grotesk',sans-serif; font-size:1.9rem; font-weight:700; color:#cfe0f5;">—</span>
-            <span style="font-size:0.78rem; color:#a9c8ee;" id="ferryTotalNote"></span>
+            <span id="ferryTotalAmount" style="font-family:'Space Grotesk',sans-serif; font-size:1.9rem; font-weight:700; color:var(--ferry-fg2);">—</span>
+            <span style="font-size:0.78rem; color:var(--ferry-fg);" id="ferryTotalNote"></span>
           </div>
         </div>
       </div>
@@ -936,7 +1014,8 @@
       <div class="mp-icon"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg></div>
       <p>Güzergahı hesapladıktan sonra harita burada görünecek</p>
     </div>
-    <div id="map"></div>
+ <div id="map"></div>
+    <div class="pick-banner" id="pickBanner"><span id="pickText">Haritaya dokunun</span><button type="button" onclick="cancelPick()">İptal</button></div>
     <button type="button" class="map-back" id="mapBack" aria-label="Sonuçlara dön">&#8593; Sonuçlar</button>
   </div>
 
@@ -1087,6 +1166,31 @@ function setDefaultConsumption() {
   c.min = ev ? 8 : 3; c.max = ev ? 150 : 35;
   c.value = (ev ? CONS_DEFAULTS.ev : CONS_DEFAULTS.fuel)[selectedVehicle] || (ev ? 18 : 8);
   document.getElementById('consumptionVal').textContent = c.value;
+  updatePerKm();
+}
+
+// Km başı maliyet = (tüketim × birim fiyat) / 100
+function updatePerKm() {
+  const el = document.getElementById('perKmNote');
+  if (!el) return;
+  const c = parseFloat(document.getElementById('consumption').value);
+  const pr = parseFloat(document.getElementById('fuelPrice').value);
+  if (!(c > 0) || !(pr > 0)) { el.innerHTML = ''; return; }
+  const perKm = (c * pr) / 100;
+  el.innerHTML = 'Km başı ≈ ' + perKm.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+    ' ₺/km <span>· 100 km ≈ ' + Math.round(perKm * 100).toLocaleString('tr-TR') + ' ₺</span>';
+}
+
+// Telefonda: bir bölüm seçilince sıradakine kay, tamamlanan bölümü soluklaştır (ilk seçimde bir kez)
+const _flow = {};
+function flowNext(fromId, toId) {
+  if (!isMobile() || _flow[fromId]) return;
+  const from = document.getElementById(fromId), to = document.getElementById(toId);
+  if (!from || !to) return;
+  _flow[fromId] = true;
+  from.classList.add('flow-done');
+  from.addEventListener('pointerdown', () => from.classList.remove('flow-done'), { once: true });
+  setTimeout(() => to.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
 }
 
 function selectVehicle(btn) {
@@ -1094,6 +1198,7 @@ function selectVehicle(btn) {
   btn.classList.add('active');
   selectedVehicle = btn.dataset.type;
   setDefaultConsumption();
+  flowNext('secVehicle', 'secFuel');
 }
 
 // Yakıt türüne göre birim, etiket, varsayılan fiyat ve notları ayarlar
@@ -1124,6 +1229,7 @@ function configureFuelUi(resetConsumption) {
       note.innerHTML = `Canlı fiyat alınamadı; son bilinen değer${dt ? ' (' + dt + ')' : ''} gösteriliyor. Lütfen kontrol edin.`;
     }
   }
+  updatePerKm();
 }
 
 function selectFuel(btn) {
@@ -1132,10 +1238,12 @@ function selectFuel(btn) {
   const wasEv = selectedFuel === 'elektrik';
   selectedFuel = btn.dataset.fuel;
   configureFuelUi(wasEv !== (selectedFuel === 'elektrik'));
+  flowNext('secFuel', 'secParams');
 }
 
 function setEvPrice(kind) {
   document.getElementById('fuelPrice').value = EV_AVG[kind].toFixed(2);
+  updatePerKm();
 }
 
 function changePass(delta) {
@@ -1194,6 +1302,9 @@ function resolveIstIzm(gate, routePoints) {
     name: `İstanbul–İzmir Otoyolu (Osmangazi dahil, ${ex.name} çıkışına kadar)` };
 }
 
+// Köprü / tünel gibi noktasal geçişler (otoyol boyunca km ücreti olmayanlar)
+const POINT_TOLL_IDS = new Set(['fsm', 'bogazici', 'yavuz', 'avrasya', 'canakkale', 'bolu', 'ilgaz']);
+
 // Google'ın "Paralı yol" diye işaretlediği adımların noktaları (rotada gerçekten ücretli kısım nerede?)
 function tollStepPoints(route) {
   const pts = [];
@@ -1217,7 +1328,7 @@ function detectTolls(routePoints, tollPts) {
     );
     if (!isOnRoute) continue;
     // Köprü/tünel gibi noktasal geçişler: Google bu kısmı ücretli işaretlemiyorsa rota sadece yakından geçiyordur
-    if (gate.confirm && tollPts) {
+    if (gate.confirm !== false && tollPts) {
       const confirmed = tollPts.some(p => haversineKm(gate.lat, gate.lng, p.lat, p.lng) < CONFIRM_KM);
       if (!confirmed) continue;
     }
@@ -1259,14 +1370,24 @@ function arrangeRoutes(items) {
   }).sort((a, b) => (rank[a.kind] - rank[b.kind]) || (a.index - b.index));
 }
 
+const KIND_FALLBACK = { best: '#dcb87a', fast: '#dcb87a', cheap: '#78cdb0', free: '#b4a4e6', ferry: '#86b3e6', alt: '#93a1af' };
+function kindColor(kind) {
+  const k = KIND_FALLBACK[kind] ? kind : 'alt';
+  try {
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--k-' + k).trim();
+    if (v) return v;
+  } catch (e) {}
+  return KIND_FALLBACK[k];
+}
 function routeKindMeta(kind) {
+  const color = kindColor(kind);
   switch (kind) {
-    case 'best':  return { badge: ic('bolt') + ' En hızlı ve en ucuz', badgeClass: 'badge-fast',  color: '#dcb87a' };
-    case 'fast':  return { badge: ic('bolt') + ' En hızlı',            badgeClass: 'badge-fast',  color: '#dcb87a' };
-    case 'cheap': return { badge: ic('coin') + ' En ucuz',             badgeClass: 'badge-cheap', color: '#78cdb0' };
-    case 'free':  return { badge: ic('leaf') + ' Ücretsiz yol',        badgeClass: 'badge-free',  color: '#b4a4e6' };
-    case 'ferry': return { badge: ic('ferry') + ' Feribotlu',          badgeClass: 'badge-ferry', color: '#86b3e6' };
-    default:      return { badge: ic('route') + ' Alternatif',         badgeClass: 'badge-alt',   color: '#93a1af' };
+    case 'best':  return { badge: ic('bolt') + ' En hızlı ve en ucuz', badgeClass: 'badge-fast',  color };
+    case 'fast':  return { badge: ic('bolt') + ' En hızlı',            badgeClass: 'badge-fast',  color };
+    case 'cheap': return { badge: ic('coin') + ' En ucuz',             badgeClass: 'badge-cheap', color };
+    case 'free':  return { badge: ic('leaf') + ' Ücretsiz yol',        badgeClass: 'badge-free',  color };
+    case 'ferry': return { badge: ic('ferry') + ' Feribotlu',          badgeClass: 'badge-ferry', color };
+    default:      return { badge: ic('route') + ' Alternatif',         badgeClass: 'badge-alt',   color };
   }
 }
 
@@ -1319,6 +1440,9 @@ function calculate() {
     const tollPts = tollStepPoints(route);
     const tolls = detectTolls(routePoints, tollPts);
     const tollMarked = tollPts.length > 0;
+    // Google'ın ücretli işaretlediği toplam km (nokta geçişleri dışında bizim modelde karşılığı olmayan otoyollar için uyarı)
+    const tollKm = ((leg.steps || []).filter(st => /paralı yol|toll road/i.test(st.instructions || ''))
+      .reduce((a, st) => a + ((st.distance && st.distance.value) || 0), 0)) / 1000;
     let tollTotal = 0;
     tolls.forEach(t => { tollTotal += t.fees[selectedVehicle] || 0; });
 
@@ -1346,13 +1470,16 @@ function calculate() {
       tolls,
       sec: leg.duration.value,
       tollMarked,
-      unknownToll: tollMarked && tolls.length === 0,
+      tollKm,
+      unknownToll: tollMarked && (tolls.length === 0 || (tollKm > 30 && !tolls.some(g => !POINT_TOLL_IDS.has(g.id)))),
       tollFree: !tollMarked && tolls.length === 0,
       hasFerry: hasFerry || hasFerryInSummary,
     };
   }
 
   function renderRoute(idx) {
+    window._activeRouteIdx = idx;
+    window._renderRoute = renderRoute;
     const r = allRoutes[idx];
     const consumption_val = parseFloat(document.getElementById('consumption').value);
 
@@ -1376,6 +1503,9 @@ function calculate() {
     document.getElementById('tollDetail').textContent =
       r.tolls.length > 0 ? `${r.tolls.length} geçiş noktası tespit edildi`
       : r.unknownToll ? 'Ücretli yol var, ücreti hesaplanamadı' : 'Ücretli geçiş yok';
+    if (r.unknownToll && r.tolls.length > 0) {
+      document.getElementById('tollDetail').textContent = `${r.tolls.length} geçiş tespit edildi · otoyol ücreti hesaplanamadı`;
+    }
 
     // Feribot uyarısı
     let ferryWarn = document.getElementById('ferryWarning');
@@ -1383,10 +1513,10 @@ function calculate() {
       ferryWarn = document.createElement('div');
       ferryWarn.id = 'ferryWarning';
       ferryWarn.style.cssText = `
-        display:none; background:rgba(59,130,246,0.12);
-        border:1px solid rgba(59,130,246,0.5);
+        display:none; background:var(--ferry-bg);
+        border:1px solid var(--ferry-bd);
         border-radius:10px; padding:12px 16px;
-        font-size:0.84rem; color:#a9c8ee; line-height:1.5;
+        font-size:0.84rem; color:var(--ferry-fg); line-height:1.5;
         margin-top:2px;
       `;
       document.getElementById('tollCost').closest('.breakdown-item').after(ferryWarn);
@@ -1406,26 +1536,26 @@ function calculate() {
       let ferryInfo = '';
       if (routeFullText.includes('eskihisar') || routeFullText.includes('topçular') || routeFullText.includes('topcular')) {
         ferryInfo = `
-          <div style="margin-top:6px;font-size:0.79rem;color:#cfe0f5;">
+          <div style="margin-top:6px;font-size:0.79rem;color:var(--ferry-fg2);">
             ${ic('pin')} <strong>Eskihisar → Topçular (İDO)</strong><br>
             Otomobil: <strong>730 ₺</strong> (gece 22:00–10:00 arası: 630 ₺)<br>
             Motosiklet: 400 ₺ · Minibüs: 1.260 ₺ · Ortalama süre: 35 dk
           </div>`;
       } else if (routeFullText.includes('yenikapı') || routeFullText.includes('yenikapi') || routeFullText.includes('yalova')) {
         ferryInfo = `
-          <div style="margin-top:6px;font-size:0.79rem;color:#cfe0f5;">
+          <div style="margin-top:6px;font-size:0.79rem;color:var(--ferry-fg2);">
             ${ic('pin')} <strong>Yenikapı → Yalova (İDO Hızlı Feribot)</strong><br>
             Bilet ücreti için ido.com.tr adresini kontrol edin. Süre: ~75 dk
           </div>`;
       } else if (routeFullText.includes('bandırma') || routeFullText.includes('bandirma')) {
         ferryInfo = `
-          <div style="margin-top:6px;font-size:0.79rem;color:#cfe0f5;">
+          <div style="margin-top:6px;font-size:0.79rem;color:var(--ferry-fg2);">
             ${ic('pin')} <strong>İstanbul → Bandırma (İDO)</strong><br>
             Bilet ücreti için ido.com.tr adresini kontrol edin. Süre: ~2 saat
           </div>`;
       } else {
         ferryInfo = `
-          <div style="margin-top:6px;font-size:0.79rem;color:#cfe0f5;">
+          <div style="margin-top:6px;font-size:0.79rem;color:var(--ferry-fg2);">
             Feribot hattı ve güncel bilet fiyatı için <strong>ido.com.tr</strong> veya <strong>budo.com.tr</strong> adreslerini ziyaret edin.
           </div>`;
       }
@@ -1442,8 +1572,8 @@ function calculate() {
       }
 
       ferryWarn.innerHTML = `
-        ${ic('ferry')} <strong style="color:#cfe0f5">Bu rota feribot içeriyor</strong><br>
-        <span style="color:#a9c8ee;font-size:0.8rem;">
+        ${ic('ferry')} <strong style="color:var(--ferry-fg2)">Bu rota feribot içeriyor</strong><br>
+        <span style="color:var(--ferry-fg);font-size:0.8rem;">
           Feribot bilet ücreti hesaba <strong>dahil değildir</strong> — aşağıdaki tahmini fiyatları toplam maliyete ekleyin.
         </span>
         ${ferryInfo}
@@ -1475,6 +1605,7 @@ function calculate() {
             <span class="toll-price">${formatTL(fee)}</span>
           </div>`;
       });
+      if (r.unknownToll) tollList.innerHTML += '<div class="fuel-note warn">Bu rotada bizim listemizde ücreti bulunmayan ücretli otoyol kesimleri de var; toplam EKSİK olabilir. Kesin ücret için işletmecinin sitesine bakın.</div>';
       tollListWrap.style.display = 'block';
     } else if (r.unknownToll) {
       tollList.innerHTML = '<div class="fuel-note warn">Google bu rotada ücretli yol gösteriyor ama bu geçişin ücretini listemizde bulamadık. Toplam bu kadar EKSİK olabilir; ücreti işletmecinin sitesinden kontrol edin.</div>';
@@ -1579,7 +1710,6 @@ function calculate() {
               <tr><td style="padding:3px 0;color:#666">Minibüs</td><td style="text-align:right;font-weight:600">${t.fees.minibus.toLocaleString('tr-TR')} ₺</td></tr>
               <tr><td style="padding:3px 0;color:#666">Motosiklet</td><td style="text-align:right;font-weight:600">${t.fees.motorcycle > 0 ? t.fees.motorcycle.toLocaleString('tr-TR') + ' ₺' : 'Geçemez'}</td></tr>
               <tr><td style="padding:3px 0;color:#666">Kamyon / Tır</td><td style="text-align:right;font-weight:600">${t.fees.truck > 0 ? t.fees.truck.toLocaleString('tr-TR') + ' ₺' : 'Geçemez'}</td></tr>
-              <tr><td style="padding:3px 0;color:#666">Otobüs</td><td style="text-align:right;font-weight:600">${t.fees.bus > 0 ? t.fees.bus.toLocaleString('tr-TR') + ' ₺' : 'Geçemez'}</td></tr>
             </table>
             <div style="margin-top:8px;padding:6px 8px;background:#fbf6ea;border-radius:6px;font-size:0.8rem;">
               <strong>Seçili aracınız:</strong>
@@ -1724,17 +1854,9 @@ function calculate() {
     allRoutes = ordered.map(o => o.d);
 
     // Harita kur
-    document.getElementById('mapPlaceholder').style.display = 'none';
-    document.getElementById('map-container').classList.add('has-map');
-    document.getElementById('map').style.display = 'block';
-    if (!map) {
-      map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 7,
-        center: { lat: 39.0, lng: 35.0 },
-        styles: darkMapStyle,
-        zoomControl: true,
-      });
-    }
+    cancelPick();
+    if (pickMarker) { pickMarker.setMap(null); pickMarker = null; }
+    ensureMap();
 
     // Rota tablarını oluştur
     const tabsEl = document.getElementById('routesTabs');
@@ -1755,7 +1877,7 @@ function calculate() {
         : formatTL(r.total);
       tab.innerHTML = `
         ${badge}
-        <div class="route-tab-price" style="color:${color}">${displayTotal}</div>
+        <div class="route-tab-price" style="color:var(--k-${meta.label || 'alt'})">${displayTotal}</div>
         <div class="route-tab-km">${r.distanceKm.toFixed(0)} km · ${r.duration}</div>
       `;
       tab.onclick = () => renderRoute(i);
@@ -1969,7 +2091,7 @@ function renderEv(j) {
   }
   const dcCount = stations.filter(s => s.dc).length;
   st.style.display = 'block';
-  st.innerHTML = `Yolun en fazla 3 km yakınında <b>${stations.length}</b> istasyon${evFilterDc ? '' : ` (${dcCount} tanesi hızlı DC)`}${j.partial ? ' · <span style="color:#fbbf77">bazı bölgeler yüklenemedi</span>' : ''}. Listeden birine tıklayınca haritada görürsünüz.`;
+  st.innerHTML = `Yolun en fazla 3 km yakınında <b>${stations.length}</b> istasyon${evFilterDc ? '' : ` (${dcCount} tanesi hızlı DC)`}${j.partial ? ' · <span style="color:var(--warn)">bazı bölgeler yüklenemedi</span>' : ''}. Listeden birine tıklayınca haritada görürsünüz.`;
 
   window._infoWindow = window._infoWindow || new google.maps.InfoWindow();
   const shown = stations.slice(0, 250);
@@ -2014,6 +2136,98 @@ function renderEv(j) {
 // KONUM ÖNERİLERİ — Places API (New) AutocompleteSuggestion
 // Eski google.maps.places.Autocomplete widget'ı yeni projelerde çalışmıyor
 // ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// TEMA (açık / koyu) — sistem temasına uyar, seçim hatırlanır
+// ═══════════════════════════════════════════════
+function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+function themeMapStyle() { return currentTheme() === 'light' ? lightMapStyle : darkMapStyle; }
+function applyTheme(t, persist) {
+  document.documentElement.setAttribute('data-theme', t);
+  try { if (persist) localStorage.setItem('ym-theme', t); } catch (e) {}
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.setAttribute('content', t === 'light' ? '#f3efe8' : '#131a21');
+  if (typeof map !== 'undefined' && map && map.setOptions) map.setOptions({ styles: themeMapStyle() });
+  // Rota renklerini yeni temaya göre yeniden hesapla ve çiz
+  if (window._routeMeta && window._routeMeta.length) {
+    window._routeMeta = window._routeMeta.map(mt => ({ ...mt, color: kindColor(mt.label) }));
+    if (window._renderRoute) window._renderRoute(window._activeRouteIdx || 0);
+  }
+}
+document.getElementById('themeBtn').addEventListener('click', () => applyTheme(currentTheme() === 'light' ? 'dark' : 'light', true));
+try {
+  const mq = window.matchMedia && matchMedia('(prefers-color-scheme: light)');
+  if (mq && mq.addEventListener) mq.addEventListener('change', e => {
+    let saved = null; try { saved = localStorage.getItem('ym-theme'); } catch (err) {}
+    if (saved !== 'light' && saved !== 'dark') applyTheme(e.matches ? 'light' : 'dark', false);
+  });
+} catch (e) {}
+
+// ═══════════════════════════════════════════════
+// HARİTA — oluştur ve haritadan nokta seç
+// ═══════════════════════════════════════════════
+function ensureMap() {
+  document.getElementById('mapPlaceholder').style.display = 'none';
+  document.getElementById('map-container').classList.add('has-map');
+  document.getElementById('map').style.display = 'block';
+  if (!map) {
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 6,
+      center: { lat: 39.0, lng: 35.0 },
+      styles: themeMapStyle(),
+      zoomControl: true,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+    });
+  }
+  return map;
+}
+
+let pickKind = null, pickMarker = null, pickBound = false;
+
+function startPick(kind) {
+  if (typeof google === 'undefined' || !google.maps || !google.maps.Map) { setHint('Harita henüz yüklenmedi, birkaç saniye sonra tekrar deneyin.'); return; }
+  if (pickKind === kind) { cancelPick(); return; }
+  ensureMap();
+  pickKind = kind;
+  document.getElementById('pickOrigin').classList.toggle('active', kind === 'origin');
+  document.getElementById('pickDestination').classList.toggle('active', kind === 'destination');
+  document.getElementById('pickText').textContent = kind === 'origin' ? 'Başlangıç için haritaya dokunun' : 'Varış için haritaya dokunun';
+  document.getElementById('pickBanner').classList.add('on');
+  if (map.setOptions) map.setOptions({ draggableCursor: 'crosshair' });
+  if (!pickBound && map.addListener) { map.addListener('click', onMapPick); pickBound = true; }
+  scrollToMap();
+}
+
+function cancelPick() {
+  pickKind = null;
+  const b = document.getElementById('pickBanner'); if (b) b.classList.remove('on');
+  ['pickOrigin', 'pickDestination'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('active'); });
+  if (map && map.setOptions) map.setOptions({ draggableCursor: null });
+}
+
+async function onMapPick(e) {
+  if (!pickKind || !e || !e.latLng) return;
+  const kind = pickKind;
+  const lat = e.latLng.lat(), lng = e.latLng.lng();
+  cancelPick();
+  if (pickMarker) pickMarker.setMap(null);
+  const col = kind === 'origin' ? '#78cdb0' : '#dcb87a';
+  pickMarker = new google.maps.Marker({
+    position: { lat, lng }, map,
+    icon: svgIcon('<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="11" fill="' + col + '" stroke="#131a21" stroke-width="2.5"/><circle cx="15" cy="15" r="3.6" fill="#131a21"/></svg>', 30),
+    zIndex: 20,
+  });
+  setHint('');
+  const input = document.getElementById(kind);
+  input.value = 'Yer çözümleniyor…';
+  const label = await describeLocation(lat, lng);
+  input.value = label;
+  _sel[kind] = { text: label, lat, lng };
+  if (isMobile()) input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && pickKind) cancelPick(); });
+
 const isMobile = () => window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
 function scrollToMap() {
   if (!isMobile()) return;
@@ -2277,6 +2491,24 @@ const darkMapStyle = [
   { featureType:'transit', stylers:[{visibility:'off'}] },
   { featureType:'administrative', elementType:'geometry.stroke', stylers:[{color:'#2b3843'}] },
 ];
+
+// Açık tema harita stili
+const lightMapStyle = [
+  { elementType:'geometry', stylers:[{color:'#ece7dd'}] },
+  { elementType:'labels.text.fill', stylers:[{color:'#5f6b76'}] },
+  { elementType:'labels.text.stroke', stylers:[{color:'#f6f2ea'}] },
+  { featureType:'road', elementType:'geometry', stylers:[{color:'#fbf9f5'}] },
+  { featureType:'road.highway', elementType:'geometry', stylers:[{color:'#f0d6a0'}] },
+  { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{color:'#8a5f14'}] },
+  { featureType:'water', elementType:'geometry', stylers:[{color:'#b9d3e6'}] },
+  { featureType:'landscape.natural', elementType:'geometry', stylers:[{color:'#e3e5d4'}] },
+  { featureType:'poi', stylers:[{visibility:'off'}] },
+  { featureType:'transit', stylers:[{visibility:'off'}] },
+  { featureType:'administrative', elementType:'geometry.stroke', stylers:[{color:'#d5ccbb'}] },
+];
+
+document.getElementById('fuelPrice').addEventListener('input', updatePerKm);
+updatePerKm();
 
 // Map başlangıçta gizli
 document.getElementById('map').style.display = 'none';
